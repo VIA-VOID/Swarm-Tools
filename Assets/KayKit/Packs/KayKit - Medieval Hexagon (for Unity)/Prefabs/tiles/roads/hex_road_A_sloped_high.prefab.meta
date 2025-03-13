@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: cbf5338e652e63d4fb6e1289dfbe5aa9
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/tiles/roads/hex_road_A_sloped_high.prefab
+  uploadId: 678584

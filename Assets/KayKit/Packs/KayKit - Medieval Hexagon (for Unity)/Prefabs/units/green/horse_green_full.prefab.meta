@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 00c29e6d64635bc46bf326d410b801fe
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/units/green/horse_green_full.prefab
+  uploadId: 678584

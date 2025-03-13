@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 8fcea8b1b0e8e834c816713048cc154f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Materials/hexagons_medieval_spring.mat
+  uploadId: 678584

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: f5d290f564dc7d7438e79949b85fce90
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/buildings/blue/building_workshop_blue.prefab
+  uploadId: 678584

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: f8cf8e4eccc1d1442829696d22cbdf3f
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/buildings/yellow/building_barracks_yellow.prefab
+  uploadId: 678584

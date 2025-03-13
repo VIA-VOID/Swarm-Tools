@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 18bcbfa812bf4154d9c40d60a9ace531
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/tiles/rivers/waterless/hex_river_crossing_A_waterless.prefab
+  uploadId: 678584

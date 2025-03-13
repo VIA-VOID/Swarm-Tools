@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c129d4857c2a02f4c8b39e4a3e0e5515
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/buildings/neutral/building_dirt.prefab
+  uploadId: 678584

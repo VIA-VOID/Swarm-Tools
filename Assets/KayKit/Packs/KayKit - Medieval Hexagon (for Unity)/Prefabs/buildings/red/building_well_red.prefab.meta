@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c04c2b24d97dd1a4a9fd8f3b5f3c0e66
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/buildings/red/building_well_red.prefab
+  uploadId: 678584

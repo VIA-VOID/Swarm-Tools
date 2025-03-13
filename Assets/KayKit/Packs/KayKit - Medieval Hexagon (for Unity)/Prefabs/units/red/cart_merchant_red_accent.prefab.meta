@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b946c1070732d7444a78edcc10087d3a
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/units/red/cart_merchant_red_accent.prefab
+  uploadId: 678584

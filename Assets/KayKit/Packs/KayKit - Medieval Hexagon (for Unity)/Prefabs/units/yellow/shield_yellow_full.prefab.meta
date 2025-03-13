@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: ae2275f2e021f4a43a608ac159815335
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/units/yellow/shield_yellow_full.prefab
+  uploadId: 678584

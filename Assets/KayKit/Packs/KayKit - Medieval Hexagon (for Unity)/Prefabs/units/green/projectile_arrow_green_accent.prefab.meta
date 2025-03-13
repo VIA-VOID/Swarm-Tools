@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 86c1176db4707c148b1998ed7038aa6b
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/units/green/projectile_arrow_green_accent.prefab
+  uploadId: 678584

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e409ee2249aabc342b5dda0d37e1d80e
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/units/neutral/helmet.prefab
+  uploadId: 678584

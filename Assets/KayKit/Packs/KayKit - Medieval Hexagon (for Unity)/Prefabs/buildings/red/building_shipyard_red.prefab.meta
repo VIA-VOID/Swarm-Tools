@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 341adaa812c22a44bbc202c8b21c3dee
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/buildings/red/building_shipyard_red.prefab
+  uploadId: 678584

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 1f34651681705c44cb9b041990cd31a0
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/units/red/catapult_red_accent.prefab
+  uploadId: 678584

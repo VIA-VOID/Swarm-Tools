@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: aab93595889b51044adb91011f75f107
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/tiles/base/hex_transition.prefab
+  uploadId: 678584

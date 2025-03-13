@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 606d93698de56d042bc1b813f97f19af
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/decoration/props/crate_long_empty.prefab
+  uploadId: 678584
