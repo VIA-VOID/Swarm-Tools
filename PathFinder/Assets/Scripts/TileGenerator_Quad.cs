@@ -334,51 +334,9 @@ public class TileGenerator_Quad : MonoBehaviour
         Camera.main.transform.position = new Vector3(cameraPos, 15, cameraPos);
     }
     
+    
     void SetTileData()
     {
-        tileDatas.Clear(); // 기존 데이터를 초기화
-
-        List<KeyValuePair<Vector3, GameObject>> sortedTiles = quadTiles.ToList();
-        sortedTiles.Sort((a, b) => 
-        {
-            if (a.Key.z != b.Key.z) return b.Key.z.CompareTo(a.Key.z); // 위에서 아래로
-            return a.Key.x.CompareTo(b.Key.x); // 왼쪽부터 오른쪽으로
-        });
-
-        int row = 0;
-        int col = 0;
-        int rowSize = currentMapSize + 1;
-
-        foreach (var tileEntry in sortedTiles)
-        {
-            GameObject tile = tileEntry.Value;
-            TileScript tileScript = tile.GetComponent<TileScript>();
-            
-            if (tileScript != null)
-            {
-                tileDatas.Add(tileScript);
-                tileScript.SetTilePoint(row, col);
-                col++;
-                
-                // 다음 줄로 이동할 조건
-                if (col >= rowSize)
-                {
-                    row++;
-                    col = 0;
-                    
-                    if (row <= currentMapSize)
-                        rowSize++;
-                    else
-                        rowSize--;
-                }
-                
-                if (tile.CompareTag("WaterTile"))
-                {
-                    tileScript.SetMovable(false);
-                }
-            }
-        }
-        
         // TODO data to dll
         
         Debug.Log("타일 데이터가 설정되었습니다. 타일 개수: " + tileDatas.Count);
