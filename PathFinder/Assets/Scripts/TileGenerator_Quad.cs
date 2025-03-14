@@ -46,19 +46,21 @@ public class TileGenerator_Quad : MonoBehaviour
     [EnumToggleButtons, HideLabel]
     public CreateStatus createStatus;
     
-    private float hexWidth = 1.732f;
-    private float hexHeight = 1.5f;
-    private float spacingFactor = 1.15f;
-
+    // 타일 관리 딕셔너리
     private Dictionary<Vector3, GameObject> quadTiles = new Dictionary<Vector3, GameObject>();
+    // 타일 UI 관리 딕셔너리
     private Dictionary<GameObject, GameObject> tileValueTexts = new Dictionary<GameObject, GameObject>(); // 타일별 UI 관리
-    private int currentMapSize;
+    // 생성된 캐릭터
     private GameObject spawnedCharacter;
-
+    // 사용중인 메인 카메라
     private Camera mainCamera;
+    // 타일 생성 지점 (현재는 이 스크립트)
     private Transform tileSpawnPoint;
+    // 시작 타일 오브젝트
     private GameObject startTileObj;
+    // 종료 타일 오브젝트
     private GameObject endTileObj;
+    // 움직임 코루틴
     private Coroutine moveCoroutine = null;
 
     private void Start()
@@ -255,7 +257,7 @@ public class TileGenerator_Quad : MonoBehaviour
                         
                         getTileScript.SetTilePrefab(hexPrefabWater);
 
-                        selectedTile.tag = "WaterTile";
+                        getTileScript.SetMovable(false);
                         
                         if (getTileScript != null)
                         {
@@ -269,7 +271,7 @@ public class TileGenerator_Quad : MonoBehaviour
         // R 키를 누르면 맵을 초기화
         if (Keyboard.current.rKey.wasPressedThisFrame)
         {
-            GenerateQuadTileMap(currentMapSize);
+            GenerateQuadTileMap(mapSize);
         }
     }
 
@@ -287,7 +289,7 @@ public class TileGenerator_Quad : MonoBehaviour
     
     void GenerateQuadTileMap(int size)
     {
-        currentMapSize = size;
+        mapSize = size;
     
         tileDatas.Clear();
         quadTiles.Clear();
@@ -319,6 +321,7 @@ public class TileGenerator_Quad : MonoBehaviour
                 TileScript getTile = tile.GetComponent<TileScript>();
                 getTile.SetTilePrefab(baseTilePrefab);
                 getTile.SetMovable(true);
+                getTile.SetTilePoint(x, y);
                 tile.tag = "QuadTile"; // 태그 설정
                 quadTiles.Add(tileSpawnPoint.position + worldPos, tile);
                 tileDatas.Add(tile.GetComponent<TileScript>());
@@ -329,7 +332,7 @@ public class TileGenerator_Quad : MonoBehaviour
         startTileObj = null;
         endTileObj = null;
 
-        float cameraPos = (currentMapSize - 1) / 2f;
+        float cameraPos = (mapSize - 1) / 2f;
 
         Camera.main.transform.position = new Vector3(cameraPos, 15, cameraPos);
     }
@@ -340,12 +343,6 @@ public class TileGenerator_Quad : MonoBehaviour
         // TODO data to dll
         
         Debug.Log("타일 데이터가 설정되었습니다. 타일 개수: " + tileDatas.Count);
-    }
-    Vector3 HexToWorldPosition(int q, int r)
-    {
-        float x = hexWidth * spacingFactor * (q + r * 0.5f);
-        float z = hexHeight * spacingFactor * r;
-        return new Vector3(x, 0, z);
     }
 
     void ChangeTileColor(GameObject tile, Color color)

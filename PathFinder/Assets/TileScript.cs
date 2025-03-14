@@ -9,7 +9,6 @@ public class TileScript : MonoBehaviour
     [SerializeField, ReadOnly] private bool isMovable;
     [SerializeField, ReadOnly] private int[] tilePoint = new[] {0, 0};
     [SerializeField, ReadOnly] private GameObject tileObj;
-    [SerializeField, ReadOnly] private Vector3 tilePosition;
     // 타일색상         출발지 도착지 아무색깔 3개 총5개
     // 좌표값 3개       
     // 
@@ -19,8 +18,6 @@ public class TileScript : MonoBehaviour
     {
         tilePoint[0] = x;
         tilePoint[1] = y;
-
-        tilePosition = transform.position;
     }
 
     // 타일의 좌표를 반환하는 메소드 추가
