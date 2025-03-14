@@ -41,7 +41,7 @@ public class TileGenerator_Quad : MonoBehaviour
     [SerializeField, ReadOnly] private TileScript startTileData;
     [LabelText("종료 지점 데이터")]
     [SerializeField, ReadOnly] private TileScript endTileData;
-    
+
     [Title("현재 상태")]
     [EnumToggleButtons, HideLabel]
     public CreateStatus createStatus;
@@ -51,6 +51,9 @@ public class TileGenerator_Quad : MonoBehaviour
     // 타일 UI 관리 딕셔너리
     [SerializeField]
     private Dictionary<GameObject, GameObject> tileValueTexts = new Dictionary<GameObject, GameObject>(); // 타일별 UI 관리
+    // 타일 좌표 딕셔너리
+    private Dictionary<Vector2Int, TileScript> tileMap = new Dictionary<Vector2Int, TileScript>();
+
     // 생성된 캐릭터
     private GameObject spawnedCharacter;
     // 사용중인 메인 카메라
@@ -63,7 +66,8 @@ public class TileGenerator_Quad : MonoBehaviour
     private GameObject endTileObj;
     // 움직임 코루틴
     private Coroutine moveCoroutine = null;
-
+    
+    public List<TileScript> testList;
     private void Start()
     {
         tileSpawnPoint = transform;
@@ -173,21 +177,24 @@ public class TileGenerator_Quad : MonoBehaviour
     {
         bool isMoving = true;
 
-        Vector3 targetPos = endTileObj.transform.position;
+        //Vector3 targetPos = endTileObj.transform.position;
+        
+        //TODO Add DLL
+        
         
         // 애니메이션을 Walking 상태로 변경
         if (characterAnimator != null)
         {
             characterAnimator.SetBool("walking", true);
         }
-        
-        while (Vector3.Distance(spawnedCharacter.transform.position, targetPos) > 0.1f)
-        {
-            Vector3 moveDirection = (targetPos - spawnedCharacter.transform.position).normalized;
-            spawnedCharacter.transform.position += moveDirection * moveSpeed * Time.deltaTime;
-            yield return null;
-        }
 
+        // 리스트 수신후 반복처리
+        foreach (TileScript tilePos in testList)
+        {
+            // 타일 위치까지 이동
+            yield return StartCoroutine(MovePosToTarget(tilePos.transform.position));
+        }
+        
         // 이동이 끝나면 애니메이션을 멈춤
         if (characterAnimator != null)
         {
@@ -196,7 +203,43 @@ public class TileGenerator_Quad : MonoBehaviour
 
         isMoving = false;
     }
+
+    private IEnumerator MovePosToTarget(Vector3 targetPos)
+    {
+        while (Vector3.Distance(spawnedCharacter.transform.position, targetPos) > 0.1f) // 일정 거리 이하로 도달할 때까지 반복
+        {
+            RotateCharacter(targetPos);
+            // 방향 계산
+            Vector3 moveDirection = (targetPos - spawnedCharacter.transform.position).normalized;
+     
+            // 이동 처리
+            spawnedCharacter.transform.position += moveDirection * moveSpeed * Time.deltaTime;
+        
+            yield return null; // 다음 프레임까지 대기
+        }
+        // 정확한 위치로 스냅
+        spawnedCharacter.transform.position = targetPos;
+        RotateCharacterToFront();
+    }
     
+    void RotateCharacter(Vector3 targetPos)
+    {
+        Vector3 direction = targetPos - spawnedCharacter.transform.position;
+        direction.y = 0; // 수직 방향 회전 방지
+
+        if (direction != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            spawnedCharacter.transform.rotation = Quaternion.Slerp(spawnedCharacter.transform.rotation, targetRotation, 0.2f); // 부드러운 회전
+        }
+    }
+    
+    private void RotateCharacterToFront()
+    {
+        Quaternion frontRotation = Quaternion.Euler(0, 180, 0); // 0, 180, 0 방향 설정
+        spawnedCharacter.transform.rotation = frontRotation;
+    }
+
     void Update()
     {
         if (Mouse.current.leftButton.isPressed)
@@ -328,6 +371,7 @@ public class TileGenerator_Quad : MonoBehaviour
                 tile.tag = "QuadTile"; // 태그 설정
                 quadTiles.Add(tileSpawnPoint.position + worldPos, tile);
                 tileDatas.Add(tile.GetComponent<TileScript>());
+                tileMap[new Vector2Int(x, y)] = getTile; 
             }
         }
     
@@ -337,7 +381,11 @@ public class TileGenerator_Quad : MonoBehaviour
 
         float cameraPos = (mapSize - 1) / 2f;
 
-        Camera.main.transform.position = new Vector3(cameraPos, 15, cameraPos);
+        Camera.main.transform.position = new Vector3(cameraPos, mapSize, cameraPos);
+
+        cameraHeight = mapSize;
+        
+        ChangeCameraHeight();
     }
     
     

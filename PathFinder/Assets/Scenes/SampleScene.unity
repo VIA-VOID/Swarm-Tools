@@ -162,6 +162,7 @@ MonoBehaviour:
   startTileData: {fileID: 0}
   endTileData: {fileID: 0}
   createStatus: 0
+  testList: []
 --- !u!4 &305392398
 Transform:
   m_ObjectHideFlags: 0
