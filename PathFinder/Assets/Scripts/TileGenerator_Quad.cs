@@ -85,8 +85,6 @@ public class TileGenerator_Quad : MonoBehaviour
             return;
         }
         
-        if (start)
-            
         Debug.Log("길찾기 알고리즘 실행");
 
         SpawnCharacterAtStart();
