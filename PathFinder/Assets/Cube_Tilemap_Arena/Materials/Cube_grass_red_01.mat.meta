@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 1d5d0fa655c0e2246ae8283a77c86630
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 266170
+  packageName: Cube Tilemap Pack Arena
+  packageVersion: 1.0
+  assetPath: Assets/Cube_Tilemap_Arena/Materials/Cube_grass_red_01.mat
+  uploadId: 630255

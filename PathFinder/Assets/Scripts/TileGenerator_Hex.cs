@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.WSA;
 
-public class TileGenerator : MonoBehaviour
+public class TileGenerator_Hex : MonoBehaviour
 {
     [LabelText("캐릭터 프리팹")]
     [SerializeField] private GameObject characterPrefab; // 캐릭터 프리팹
