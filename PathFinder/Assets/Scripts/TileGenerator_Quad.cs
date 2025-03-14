@@ -50,7 +50,7 @@ public class TileGenerator_Quad : MonoBehaviour
     private float hexHeight = 1.5f;
     private float spacingFactor = 1.15f;
 
-    private Dictionary<Vector3, GameObject> hexTiles = new Dictionary<Vector3, GameObject>();
+    private Dictionary<Vector3, GameObject> quadTiles = new Dictionary<Vector3, GameObject>();
     private Dictionary<GameObject, GameObject> tileValueTexts = new Dictionary<GameObject, GameObject>(); // 타일별 UI 관리
     private int currentMapSize;
     private GameObject spawnedCharacter;
@@ -84,6 +84,8 @@ public class TileGenerator_Quad : MonoBehaviour
             Debug.LogWarning("시작 지점과 도착지점을 모두 지정해야 합니다.");
             return;
         }
+
+        SetTileData();
         
         Debug.Log("길찾기 알고리즘 실행");
 
@@ -94,7 +96,7 @@ public class TileGenerator_Quad : MonoBehaviour
     [Button("타일 값 표시")]
     public void ShowTileValues()
     {
-        foreach (var tileEntry in hexTiles)
+        foreach (var tileEntry in quadTiles)
         {
             GameObject tile = tileEntry.Value;
 
@@ -203,9 +205,9 @@ public class TileGenerator_Quad : MonoBehaviour
             {
                 Vector3 pos = hit.collider.transform.position;
                 
-                if (hexTiles.ContainsKey(pos) && hexTiles[pos].CompareTag("QuadTile"))
+                if (quadTiles.ContainsKey(pos) && quadTiles[pos].CompareTag("QuadTile"))
                 {
-                    GameObject selectedTile = hexTiles[pos];
+                    GameObject selectedTile = quadTiles[pos];
 
                     if (createStatus == CreateStatus.EraseToNormal)
                     {
@@ -287,7 +289,8 @@ public class TileGenerator_Quad : MonoBehaviour
     {
         currentMapSize = size;
     
-        hexTiles.Clear();
+        tileDatas.Clear();
+        quadTiles.Clear();
     
         if (moveCoroutine != null)
         {
@@ -317,7 +320,7 @@ public class TileGenerator_Quad : MonoBehaviour
                 getTile.SetTilePrefab(baseTilePrefab);
                 getTile.SetMovable(true);
                 tile.tag = "QuadTile"; // 태그 설정
-                hexTiles.Add(tileSpawnPoint.position + worldPos, tile);
+                quadTiles.Add(tileSpawnPoint.position + worldPos, tile);
                 tileDatas.Add(tile.GetComponent<TileScript>());
             }
         }
@@ -331,12 +334,11 @@ public class TileGenerator_Quad : MonoBehaviour
         Camera.main.transform.position = new Vector3(cameraPos, 15, cameraPos);
     }
     
-    [Button("타일 데이터화")]
-    public void SetTileData()
+    void SetTileData()
     {
         tileDatas.Clear(); // 기존 데이터를 초기화
 
-        List<KeyValuePair<Vector3, GameObject>> sortedTiles = hexTiles.ToList();
+        List<KeyValuePair<Vector3, GameObject>> sortedTiles = quadTiles.ToList();
         sortedTiles.Sort((a, b) => 
         {
             if (a.Key.z != b.Key.z) return b.Key.z.CompareTo(a.Key.z); // 위에서 아래로
@@ -346,8 +348,7 @@ public class TileGenerator_Quad : MonoBehaviour
         int row = 0;
         int col = 0;
         int rowSize = currentMapSize + 1;
-        int maxRow = currentMapSize * 2;
-        
+
         foreach (var tileEntry in sortedTiles)
         {
             GameObject tile = tileEntry.Value;
