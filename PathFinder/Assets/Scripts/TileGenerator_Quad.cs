@@ -218,8 +218,10 @@ public class TileGenerator_Quad : MonoBehaviour
                         
                         getTileScript.SetTilePrefab(baseTilePrefab);
                         
-                        selectedTile.tag = "QuadTile";
+                        getTileScript.SetMovable(true);
                         
+                        selectedTile.tag = "QuadTile";
+
                         if (getTileScript != null)
                         {
                             getTileScript.SetMovable(true); // 이동 가능 블록으로 재변경
