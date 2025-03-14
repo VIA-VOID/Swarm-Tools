@@ -49,6 +49,7 @@ public class TileGenerator_Quad : MonoBehaviour
     // 타일 관리 딕셔너리
     private Dictionary<Vector3, GameObject> quadTiles = new Dictionary<Vector3, GameObject>();
     // 타일 UI 관리 딕셔너리
+    [SerializeField]
     private Dictionary<GameObject, GameObject> tileValueTexts = new Dictionary<GameObject, GameObject>(); // 타일별 UI 관리
     // 생성된 캐릭터
     private GameObject spawnedCharacter;
@@ -311,11 +312,11 @@ public class TileGenerator_Quad : MonoBehaviour
     
         Dictionary<Vector3, Vector2Int> worldToGridMap = new Dictionary<Vector3, Vector2Int>();
     
-        for (int y = 0; y < size; y++) // 위에서 아래로
+        for (int y = 0; y < size; y++)
         {
-            for (int x = 0; x < size; x++) // 왼쪽에서 오른쪽으로
+            for (int x = 0; x < size; x++)
             {
-                Vector3 worldPos = new Vector3(y, 0, x); // 좌측 상단이 (0,0,0) 기준으로 조정, Z축 변경
+                Vector3 worldPos = new Vector3(x, 0, size - 1 - y);
                 GameObject tile = Instantiate(tilePrefab, tileSpawnPoint.position + worldPos, Quaternion.identity, tileSpawnPoint);
 
                 TileScript getTile = tile.GetComponent<TileScript>();
