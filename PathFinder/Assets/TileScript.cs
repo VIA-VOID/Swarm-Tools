@@ -1,31 +1,53 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Sirenix.OdinInspector;
+using Unity.VisualScripting;
 using UnityEngine;
+
+[StructLayout(LayoutKind.Sequential)] // 메모리 배치 강제
+public struct Pos
+{
+    public int x;
+    public int y;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+public struct TileData
+{
+    public int isMovable;
+    public Pos tilePoint;
+}
 
 [Serializable]
 public class TileScript : MonoBehaviour
 {
     // 데이터용
     [SerializeField, ReadOnly] private bool isMovable;
-    [SerializeField, ReadOnly] private int[] tilePoint = new[] {0, 0};
+    [SerializeField, ReadOnly] private Pos tilePoint;
     [SerializeField, ReadOnly] private GameObject tileObj;
     // 타일색상         출발지 도착지 아무색깔 3개 총5개
     // 좌표값 3개       
     // 
-    
+
     // 타일의 좌표를 설정하는 메소드 추가
+    public void SetTilePoint(Pos pos)
+    {
+        tilePoint = pos;
+    }
+
     public void SetTilePoint(int x, int y)
     {
-        tilePoint[0] = x;
-        tilePoint[1] = y;
+        tilePoint.x = x;
+        tilePoint.y = y;
     }
 
     // 타일의 좌표를 반환하는 메소드 추가
-    public int[] GetTilePoint()
+    public Pos GetTilePoint()
     {
         return tilePoint;
     }
-    
+
     // isMovable 값을 설정하는 메소드
     public void SetMovable(bool movable)
     {
@@ -44,7 +66,7 @@ public class TileScript : MonoBehaviour
         {
             Destroy(tileObj);
         }
-        
+
         tileObj = Instantiate(tilePrefab, transform);
     }
 }

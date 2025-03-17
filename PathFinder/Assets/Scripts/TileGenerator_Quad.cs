@@ -3,10 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using NUnit.Framework;
 using Sirenix.OdinInspector;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
+using UnityEngine.Tilemaps;
 using UnityEngine.WSA;
 
 public class TileGenerator_Quad : MonoBehaviour
@@ -33,10 +36,10 @@ public class TileGenerator_Quad : MonoBehaviour
     [LabelText("카메라 각도")]
     //[OnValueChanged("")]
     [SerializeField] private float cameraAngle;
-    
+
     [Title("맵 데이터 관련")]
     [LabelText("맵 데이터 리스트")]
-    [SerializeField]private List<TileScript> tileDatas;
+    [SerializeField] private List<TileScript> tileDatas;
     [LabelText("시작 지점 데이터")]
     [SerializeField, ReadOnly] private TileScript startTileData;
     [LabelText("종료 지점 데이터")]
@@ -45,7 +48,7 @@ public class TileGenerator_Quad : MonoBehaviour
     [Title("현재 상태")]
     [EnumToggleButtons, HideLabel]
     public CreateStatus createStatus;
-    
+
     // 타일 관리 딕셔너리
     private Dictionary<Vector3, GameObject> quadTiles = new Dictionary<Vector3, GameObject>();
     // 타일 UI 관리 딕셔너리
@@ -66,13 +69,80 @@ public class TileGenerator_Quad : MonoBehaviour
     private GameObject endTileObj;
     // 움직임 코루틴
     private Coroutine moveCoroutine = null;
-    
-    public List<TileScript> testList;
+
+    private List<TileScript> path;
+    private List<TileScript> allPath;
+
     private void Start()
     {
         tileSpawnPoint = transform;
         mainCamera = Camera.main;
     }
+
+    // ============================== DLL PATH-FIND START ==============================
+    private void LoadPathFindDLL(List<TileScript> tileDatas)
+    {
+        TileData[] arr = new TileData[tileDatas.Count];
+
+        for (int i = 0; i < tileDatas.Count; i++)
+        {
+            arr[i].isMovable = tileDatas[i].IsMovable() ? 1 : 0;
+            arr[i].tilePoint = tileDatas[i].GetTilePoint();
+        }
+
+        // GC 동작 방지
+        GCHandle handle = GCHandle.Alloc(arr, GCHandleType.Pinned);
+        IntPtr pointer = handle.AddrOfPinnedObject();
+
+        Pos start = startTileData.GetTilePoint();
+        Pos end = endTileData.GetTilePoint();
+
+        // C++ DLL 함수 호출
+        PathFinder.InitTileMap(mapSize, start, end, pointer, tileDatas.Count);
+
+        // handle 해제
+        handle.Free();
+    }
+
+    private void RunPathFind()
+    {
+        IntPtr pathPtr;
+        IntPtr allPathPtr;
+        int pathSize;
+        int allPathSize;
+
+        PathFinder.RunPathFind(out pathPtr, out pathSize, out allPathPtr, out allPathSize);
+
+        ConvertToTileScriptList(out path, pathPtr, pathSize);
+        ConvertToTileScriptList(out allPath, allPathPtr, allPathSize);
+
+        PathFinder.FreePathArray(pathPtr);
+        PathFinder.FreePathArray(allPathPtr);
+    }
+
+    private void ConvertToTileScriptList(out List<TileScript> toPath, IntPtr ptr, int size)
+    {
+        toPath = new List<TileScript>();
+
+        for (int i = 0; i < size; i++)
+        {
+            IntPtr posPtr = new IntPtr(ptr.ToInt64() + i * Marshal.SizeOf(typeof(Pos)));
+            Pos pos = Marshal.PtrToStructure<Pos>(posPtr);
+
+            TileScript foundTile = tileDatas.Find(tile => tile.GetTilePoint().x == pos.x && tile.GetTilePoint().y == pos.y);
+            if (foundTile != null)
+            {
+                toPath.Add(foundTile);
+            }
+            else
+            {
+                // TODO: 에러!!
+            }
+        }
+    }
+
+    // =============================== DLL PATH-FIND END ===============================
+
 
     #region Public Functions
 
@@ -93,13 +163,13 @@ public class TileGenerator_Quad : MonoBehaviour
         }
 
         SetTileData();
-        
+
         Debug.Log("길찾기 알고리즘 실행");
 
         SpawnCharacterAtStart();
     }
-    
-        
+
+
     [Button("타일 값 표시")]
     public void ShowTileValues()
     {
@@ -137,7 +207,7 @@ public class TileGenerator_Quad : MonoBehaviour
     }
 
     #endregion
-    
+
     void SpawnCharacterAtStart()
     {
         if (spawnedCharacter != null)
@@ -164,24 +234,17 @@ public class TileGenerator_Quad : MonoBehaviour
                 if (characterAnimator != null)
                 {
                     // 이동 시작
-                    if(moveCoroutine != null)
+                    if (moveCoroutine != null)
                         StopCoroutine(moveCoroutine);
-                    
+
                     moveCoroutine = StartCoroutine(MoveCharacterToTarget(characterAnimator));
                 }
             }
         }
     }
-
+    // 길찾기
     private IEnumerator MoveCharacterToTarget(Animator characterAnimator)
     {
-        bool isMoving = true;
-
-        //Vector3 targetPos = endTileObj.transform.position;
-        
-        //TODO Add DLL
-        
-        
         // 애니메이션을 Walking 상태로 변경
         if (characterAnimator != null)
         {
@@ -189,19 +252,17 @@ public class TileGenerator_Quad : MonoBehaviour
         }
 
         // 리스트 수신후 반복처리
-        foreach (TileScript tilePos in testList)
+        foreach (TileScript tilePos in path)
         {
             // 타일 위치까지 이동
             yield return StartCoroutine(MovePosToTarget(tilePos.transform.position));
         }
-        
+
         // 이동이 끝나면 애니메이션을 멈춤
         if (characterAnimator != null)
         {
             characterAnimator.SetBool("walking", false);
         }
-
-        isMoving = false;
     }
 
     private IEnumerator MovePosToTarget(Vector3 targetPos)
@@ -211,17 +272,17 @@ public class TileGenerator_Quad : MonoBehaviour
             RotateCharacter(targetPos);
             // 방향 계산
             Vector3 moveDirection = (targetPos - spawnedCharacter.transform.position).normalized;
-     
+
             // 이동 처리
             spawnedCharacter.transform.position += moveDirection * moveSpeed * Time.deltaTime;
-        
+
             yield return null; // 다음 프레임까지 대기
         }
         // 정확한 위치로 스냅
         spawnedCharacter.transform.position = targetPos;
         RotateCharacterToFront();
     }
-    
+
     void RotateCharacter(Vector3 targetPos)
     {
         Vector3 direction = targetPos - spawnedCharacter.transform.position;
@@ -233,7 +294,7 @@ public class TileGenerator_Quad : MonoBehaviour
             spawnedCharacter.transform.rotation = Quaternion.Slerp(spawnedCharacter.transform.rotation, targetRotation, 0.2f); // 부드러운 회전
         }
     }
-    
+
     private void RotateCharacterToFront()
     {
         Quaternion frontRotation = Quaternion.Euler(0, 180, 0); // 0, 180, 0 방향 설정
@@ -250,7 +311,7 @@ public class TileGenerator_Quad : MonoBehaviour
             if (Physics.Raycast(ray, out hit))
             {
                 Vector3 pos = hit.collider.transform.position;
-                
+
                 if (quadTiles.ContainsKey(pos) && quadTiles[pos].CompareTag("QuadTile"))
                 {
                     GameObject selectedTile = quadTiles[pos];
@@ -258,11 +319,11 @@ public class TileGenerator_Quad : MonoBehaviour
                     if (createStatus == CreateStatus.EraseToNormal)
                     {
                         TileScript getTileScript = selectedTile.gameObject.GetComponent<TileScript>();
-                        
+
                         getTileScript.SetTilePrefab(baseTilePrefab);
-                        
+
                         getTileScript.SetMovable(true);
-                        
+
                         selectedTile.tag = "QuadTile";
 
                         if (getTileScript != null)
@@ -296,15 +357,15 @@ public class TileGenerator_Quad : MonoBehaviour
                         endTileData = endTileObj.GetComponent<TileScript>();
                         ChangeTileColor(selectedTile, Color.red);
                     }
-                    
+
                     if (createStatus == CreateStatus.SetWater)
                     {
                         TileScript getTileScript = selectedTile.gameObject.GetComponent<TileScript>();
-                        
+
                         getTileScript.SetTilePrefab(hexPrefabWater);
 
                         getTileScript.SetMovable(false);
-                        
+
                         if (getTileScript != null)
                         {
                             getTileScript.SetMovable(false); // 물타일은 이동 불가
@@ -313,7 +374,7 @@ public class TileGenerator_Quad : MonoBehaviour
                 }
             }
         }
-        
+
         // R 키를 누르면 맵을 초기화
         if (Keyboard.current.rKey.wasPressedThisFrame)
         {
@@ -330,33 +391,33 @@ public class TileGenerator_Quad : MonoBehaviour
 
     void ChangeCameraAngle()
     {
-        
+
     }
-    
+
     void GenerateQuadTileMap(int size)
     {
         mapSize = size;
-    
+
         tileDatas.Clear();
         quadTiles.Clear();
-    
+
         if (moveCoroutine != null)
         {
             StopCoroutine(moveCoroutine);
         }
-    
+
         if (spawnedCharacter != null)
         {
             Destroy(spawnedCharacter);
         }
-    
+
         foreach (Transform child in tileSpawnPoint)
         {
             Destroy(child.gameObject);
         }
-    
+
         Dictionary<Vector3, Vector2Int> worldToGridMap = new Dictionary<Vector3, Vector2Int>();
-    
+
         for (int y = 0; y < size; y++)
         {
             for (int x = 0; x < size; x++)
@@ -371,10 +432,10 @@ public class TileGenerator_Quad : MonoBehaviour
                 tile.tag = "QuadTile"; // 태그 설정
                 quadTiles.Add(tileSpawnPoint.position + worldPos, tile);
                 tileDatas.Add(tile.GetComponent<TileScript>());
-                tileMap[new Vector2Int(x, y)] = getTile; 
+                tileMap[new Vector2Int(x, y)] = getTile;
             }
         }
-    
+
         // 맵이 초기화될 때, 시작점과 도착점 초기화
         startTileObj = null;
         endTileObj = null;
@@ -384,31 +445,33 @@ public class TileGenerator_Quad : MonoBehaviour
         Camera.main.transform.position = new Vector3(cameraPos, mapSize, cameraPos);
 
         cameraHeight = mapSize;
-        
+
         ChangeCameraHeight();
     }
-    
-    
+
+
     void SetTileData()
     {
-        // TODO data to dll
-        
         Debug.Log("타일 데이터가 설정되었습니다. 타일 개수: " + tileDatas.Count);
+        // DLL 필요 데이터 로드
+        LoadPathFindDLL(tileDatas);
+        // 길찾기 로직 실행 후 데이터 받아옴
+        RunPathFind();
     }
 
     void ChangeTileColor(GameObject tile, Color color)
     {
         Transform child = tile.transform.childCount > 0 ? tile.transform.GetChild(0) : null;
         if (child == null) return;
-    
+
         Renderer tileRenderer = child.GetComponent<Renderer>();
         if (tileRenderer == null) return;
-    
+
         Material newMaterial = new Material(tileRenderer.material);
         newMaterial.color = color;
         tileRenderer.material = newMaterial;
     }
-    
+
     void UpdateTileTextPositions()
     {
         foreach (var tileEntry in tileValueTexts)
