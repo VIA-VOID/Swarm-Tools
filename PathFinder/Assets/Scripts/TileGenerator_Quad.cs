@@ -230,7 +230,6 @@ public class TileGenerator_Quad : MonoBehaviour
                 lookDirection.y = 0; // 수직 방향 회전 방지
                 spawnedCharacter.transform.rotation = Quaternion.LookRotation(lookDirection);
 
-
                 if (characterAnimator != null)
                 {
                     // 이동 시작
@@ -245,12 +244,18 @@ public class TileGenerator_Quad : MonoBehaviour
     // 길찾기
     private IEnumerator MoveCharacterToTarget(Animator characterAnimator)
     {
+        if (path == null)
+        {
+            Debug.Log("이동 불가 처리 받음");
+            yield break;
+        }
+        
         // 애니메이션을 Walking 상태로 변경
         if (characterAnimator != null)
         {
             characterAnimator.SetBool("walking", true);
         }
-
+        
         // 리스트 수신후 반복처리
         foreach (TileScript tilePos in path)
         {

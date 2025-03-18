@@ -7,6 +7,7 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 using UnityEngine.WSA;
 
 public class TileCreator : MonoBehaviour
@@ -35,8 +36,7 @@ public class TileCreator : MonoBehaviour
     [OnValueChanged("ChangeCameraHeight")]
     [SerializeField] private int cameraHeight;
     [LabelText("카메라 각도")]
-    //[OnValueChanged("")]
-    [SerializeField] private float cameraAngle;
+    [SerializeField] private Slider cameraAngleSlider;
     
     [Title("맵 데이터 관련")]
     [LabelText("맵 데이터 리스트")]
@@ -62,6 +62,8 @@ public class TileCreator : MonoBehaviour
     private GameObject endTileObj;
     // 움직임 코루틴
     private Coroutine moveCoroutine = null;
+    
+    private float cameraAngle;
     
     private const string prefabPath = "Prefabs/TilePrefabs";
     
