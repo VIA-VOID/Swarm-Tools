@@ -158,11 +158,12 @@ MonoBehaviour:
   moveSpeed: 2
   cameraHeight: 15
   cameraAngle: 90
+  lilac: {r: 0.7686275, g: 0.74509805, b: 0.8862746, a: 1}
+  yellow: {r: 0.9607844, g: 0.9607844, b: 0.5686275, a: 1}
   tileDatas: []
   startTileData: {fileID: 0}
   endTileData: {fileID: 0}
   createStatus: 0
-  testList: []
 --- !u!4 &305392398
 Transform:
   m_ObjectHideFlags: 0

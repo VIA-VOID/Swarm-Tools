@@ -36,7 +36,11 @@ public class TileGenerator_Quad : MonoBehaviour
     [LabelText("카메라 각도")]
     //[OnValueChanged("")]
     [SerializeField] private float cameraAngle;
-
+    [LabelText("탐색한 타일 컬러")]
+    [SerializeField] private Color lilac;
+    [LabelText("최적 경로 컬러")]
+    [SerializeField] private Color yellow;
+    
     [Title("맵 데이터 관련")]
     [LabelText("맵 데이터 리스트")]
     [SerializeField] private List<TileScript> tileDatas;
@@ -165,7 +169,7 @@ public class TileGenerator_Quad : MonoBehaviour
         SetTileData();
 
         Debug.Log("길찾기 알고리즘 실행");
-
+        
         SpawnCharacterAtStart();
     }
 
@@ -217,30 +221,87 @@ public class TileGenerator_Quad : MonoBehaviour
 
         if (startTileObj != null)
         {
-            Vector3 spawnPosition = startTileObj.transform.position + Vector3.up * 0.5f; // 살짝 위로 올려서 스폰
-            spawnedCharacter = Instantiate(characterPrefab, spawnPosition, Quaternion.identity);
+            // 모든 타일을 기본 색상(lilac)으로 순차적으로 변경
+            StartCoroutine(ChangeTilesSequentially(allPath, path));
+        }
+    }
+    
+    // 순차적으로 색 변경 (기본 색 설정)
+    private IEnumerator ChangeTilesSequentially(List<TileScript> allTiles, List<TileScript> calTiles)
+    {
+        foreach (var tile in allTiles)
+        {
+            // 시작 타일과 종료 타일은 건너뛰기
+            if (tile == startTileData || tile == endTileData) continue;
 
-            // 애니메이터 가져오기
-            Animator characterAnimator = spawnedCharacter.GetComponent<Animator>();
+            StartCoroutine(AnimateTilePop(tile.gameObject));
+            ChangeTileColor(tile.gameObject, lilac);
+            yield return new WaitForSeconds(0.05f); // 타일을 하나씩 색 변경
+        }
+    
+        foreach (var tile in calTiles)
+        {
+            // 시작 타일과 종료 타일은 건너뛰기
+            if (tile == startTileData || tile == endTileData) continue;
 
-            // 도착 지점이 있다면 캐릭터가 도착 지점을 바라보도록 설정
-            if (endTileObj != null)
+            StartCoroutine(AnimateTilePop(tile.gameObject));
+            ChangeTileColor(tile.gameObject, yellow);
+            yield return new WaitForSeconds(0.1f); // 순차적으로 실행
+        }
+        
+        Vector3 spawnPosition = startTileObj.transform.position;
+        spawnedCharacter = Instantiate(characterPrefab, spawnPosition, Quaternion.identity);
+
+        // 애니메이터 가져오기
+        Animator characterAnimator = spawnedCharacter.GetComponent<Animator>();
+
+        if (endTileObj != null)
+        {
+            Vector3 lookDirection = endTileObj.transform.position - startTileObj.transform.position;
+            lookDirection.y = 0; // 수직 방향 회전 방지
+            spawnedCharacter.transform.rotation = Quaternion.LookRotation(lookDirection);
+
+            if (characterAnimator != null)
             {
-                Vector3 lookDirection = endTileObj.transform.position - startTileObj.transform.position;
-                lookDirection.y = 0; // 수직 방향 회전 방지
-                spawnedCharacter.transform.rotation = Quaternion.LookRotation(lookDirection);
+                // 이동 시작
+                if (moveCoroutine != null)
+                    StopCoroutine(moveCoroutine);
 
-                if (characterAnimator != null)
-                {
-                    // 이동 시작
-                    if (moveCoroutine != null)
-                        StopCoroutine(moveCoroutine);
-
-                    moveCoroutine = StartCoroutine(MoveCharacterToTarget(characterAnimator));
-                }
+                moveCoroutine = StartCoroutine(MoveCharacterToTarget(characterAnimator));
             }
         }
     }
+
+    // 뿅뿅 애니메이션 (타일 크기 변화)
+    private IEnumerator AnimateTilePop(GameObject tile)
+    {
+        Vector3 originalScale = tile.transform.localScale;
+        Vector3 enlargedScale = originalScale * 1.3f; // 커지게 만들기
+
+        float duration = 0.15f;
+        float time = 0;
+
+        // 커지는 애니메이션
+        while (time < duration)
+        {
+            tile.transform.localScale = Vector3.Lerp(originalScale, enlargedScale, time / duration);
+            time += Time.deltaTime;
+            yield return null;
+        }
+        tile.transform.localScale = enlargedScale;
+
+        time = 0;
+
+        // 다시 원래 크기로 돌아오는 애니메이션
+        while (time < duration)
+        {
+            tile.transform.localScale = Vector3.Lerp(enlargedScale, originalScale, time / duration);
+            time += Time.deltaTime;
+            yield return null;
+        }
+        tile.transform.localScale = originalScale;
+    }
+    
     // 길찾기
     private IEnumerator MoveCharacterToTarget(Animator characterAnimator)
     {
@@ -268,6 +329,8 @@ public class TileGenerator_Quad : MonoBehaviour
         {
             characterAnimator.SetBool("walking", false);
         }
+        
+        RotateCharacterToFront();
     }
 
     private IEnumerator MovePosToTarget(Vector3 targetPos)
@@ -285,7 +348,6 @@ public class TileGenerator_Quad : MonoBehaviour
         }
         // 정확한 위치로 스냅
         spawnedCharacter.transform.position = targetPos;
-        RotateCharacterToFront();
     }
 
     void RotateCharacter(Vector3 targetPos)
@@ -472,9 +534,11 @@ public class TileGenerator_Quad : MonoBehaviour
         Renderer tileRenderer = child.GetComponent<Renderer>();
         if (tileRenderer == null) return;
 
-        Material newMaterial = new Material(tileRenderer.material);
-        newMaterial.color = color;
-        tileRenderer.material = newMaterial;
+        // 기본 흰색 머티리얼을 생성한 후 색상을 적용
+        Material whiteMaterial = new Material(Shader.Find("Standard"));
+        whiteMaterial.color = Color.white; // 기본 흰색 설정
+        tileRenderer.material = whiteMaterial; // 흰색으로 초기화 후
+        tileRenderer.material.color = color; // 원하는 색상 적용
     }
 
     void UpdateTileTextPositions()
