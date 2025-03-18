@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 622f490905eb2474d899402ebab58a58
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/units/neutral/horse_saddle.prefab
+  uploadId: 678584

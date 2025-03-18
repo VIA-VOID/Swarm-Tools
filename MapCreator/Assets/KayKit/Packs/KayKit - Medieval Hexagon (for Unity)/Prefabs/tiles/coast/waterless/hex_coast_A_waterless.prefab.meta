@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 7139b536447087d41b8d7d4a6761d272
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/tiles/coast/waterless/hex_coast_A_waterless.prefab
+  uploadId: 678584

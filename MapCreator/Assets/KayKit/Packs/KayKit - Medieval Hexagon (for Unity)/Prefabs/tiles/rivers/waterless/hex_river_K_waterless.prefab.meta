@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 76d542c6c55d56147a49bd2f489dff16
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/tiles/rivers/waterless/hex_river_K_waterless.prefab
+  uploadId: 678584

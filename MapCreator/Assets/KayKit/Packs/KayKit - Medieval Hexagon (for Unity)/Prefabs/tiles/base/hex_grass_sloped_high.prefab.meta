@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: dc5cb4eb2cea3f14fb4bbf0a23bcd9fc
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/tiles/base/hex_grass_sloped_high.prefab
+  uploadId: 678584

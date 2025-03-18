@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a3bd9d47efb498c46955ea93a04a2527
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/units/red/ship_red_full.prefab
+  uploadId: 678584

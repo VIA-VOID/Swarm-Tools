@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 50d1eb89eeb52ad4f999da186a5e16a2
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/buildings/neutral/wall_corner_A_gate.prefab
+  uploadId: 678584

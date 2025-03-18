@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 1dd23dfb5a0895a45ac1f6f25b2ce6ac
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/units/green/unit_green_accent.prefab
+  uploadId: 678584

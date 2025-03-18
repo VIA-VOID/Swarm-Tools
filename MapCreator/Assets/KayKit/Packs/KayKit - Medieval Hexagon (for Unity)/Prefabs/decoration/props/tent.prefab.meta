@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 560b12c7cc668c94e84034905dcc32bc
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/decoration/props/tent.prefab
+  uploadId: 678584

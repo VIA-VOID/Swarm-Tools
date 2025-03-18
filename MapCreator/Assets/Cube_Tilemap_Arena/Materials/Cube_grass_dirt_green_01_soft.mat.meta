@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ba34ad172bdf6dc4eb4359f79d659f8c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 266170
+  packageName: Cube Tilemap Pack Arena
+  packageVersion: 1.0
+  assetPath: Assets/Cube_Tilemap_Arena/Materials/Cube_grass_dirt_green_01_soft.mat
+  uploadId: 630255

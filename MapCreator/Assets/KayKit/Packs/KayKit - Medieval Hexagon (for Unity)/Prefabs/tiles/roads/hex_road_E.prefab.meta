@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e37844304fdf9114b9e02819b4de3c2d
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/tiles/roads/hex_road_E.prefab
+  uploadId: 678584

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 85f05e5c182c025449d083b010b9cff2
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/buildings/red/building_shrine_red.prefab
+  uploadId: 678584

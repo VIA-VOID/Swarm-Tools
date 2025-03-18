@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0bf971cdb49b51647ba7795a5298526f
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/buildings/red/building_tower_cannon_red.prefab
+  uploadId: 678584

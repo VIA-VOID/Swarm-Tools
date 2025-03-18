@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 4d4278f6c6cb3d64c98dd6e8f374987c
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/tiles/base/hex_water.prefab
+  uploadId: 678584

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 8624d79ee2087c84eb6bda2b43588489
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/units/neutral/cannon.prefab
+  uploadId: 678584

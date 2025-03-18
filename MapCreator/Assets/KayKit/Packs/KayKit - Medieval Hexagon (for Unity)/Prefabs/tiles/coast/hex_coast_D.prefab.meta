@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0aa40b13cc579cb4a92d092c193b0e8e
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/tiles/coast/hex_coast_D.prefab
+  uploadId: 678584

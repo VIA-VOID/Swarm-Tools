@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: d1a7da50085d3724aa7f8b346e1a8b9f
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 290678
+  packageName: KayKit - Medieval Hexagon Pack (for Unity)
+  packageVersion: 1.0.0
+  assetPath: Assets/KayKit/Packs/KayKit - Medieval Hexagon (for Unity)/Prefabs/units/blue/sword_blue_full.prefab
+  uploadId: 678584
