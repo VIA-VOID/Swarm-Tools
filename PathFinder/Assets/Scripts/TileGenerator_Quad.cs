@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using NUnit.Framework;
 using Sirenix.OdinInspector;
 using Unity.VisualScripting;
+using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
@@ -39,8 +40,8 @@ public class TileGenerator_Quad : MonoBehaviour
     [LabelText("탐색한 타일 컬러")]
     [SerializeField] private Color lilac;
     [LabelText("최적 경로 컬러")]
-    [SerializeField] private Color yellow;
-    
+    [SerializeField] private Color orange;
+
     [Title("맵 데이터 관련")]
     [LabelText("맵 데이터 리스트")]
     [SerializeField] private List<TileScript> tileDatas;
@@ -169,7 +170,7 @@ public class TileGenerator_Quad : MonoBehaviour
         SetTileData();
 
         Debug.Log("길찾기 알고리즘 실행");
-        
+
         SpawnCharacterAtStart();
     }
 
@@ -225,30 +226,29 @@ public class TileGenerator_Quad : MonoBehaviour
             StartCoroutine(ChangeTilesSequentially(allPath, path));
         }
     }
-    
+
     // 순차적으로 색 변경 (기본 색 설정)
     private IEnumerator ChangeTilesSequentially(List<TileScript> allTiles, List<TileScript> calTiles)
     {
+        HashSet<TileScript> calTilesSet = new HashSet<TileScript>(calTiles);
+
         foreach (var tile in allTiles)
         {
             // 시작 타일과 종료 타일은 건너뛰기
             if (tile == startTileData || tile == endTileData) continue;
 
+            Color color = lilac;
             StartCoroutine(AnimateTilePop(tile.gameObject));
-            ChangeTileColor(tile.gameObject, lilac);
+
+            if (calTilesSet.Contains(tile))
+            {
+                color = orange;
+            }
+
+            ChangeTileColor(tile.gameObject, color);
             yield return new WaitForSeconds(0.05f); // 타일을 하나씩 색 변경
         }
-    
-        foreach (var tile in calTiles)
-        {
-            // 시작 타일과 종료 타일은 건너뛰기
-            if (tile == startTileData || tile == endTileData) continue;
 
-            StartCoroutine(AnimateTilePop(tile.gameObject));
-            ChangeTileColor(tile.gameObject, yellow);
-            yield return new WaitForSeconds(0.1f); // 순차적으로 실행
-        }
-        
         Vector3 spawnPosition = startTileObj.transform.position;
         spawnedCharacter = Instantiate(characterPrefab, spawnPosition, Quaternion.identity);
 
@@ -301,7 +301,7 @@ public class TileGenerator_Quad : MonoBehaviour
         }
         tile.transform.localScale = originalScale;
     }
-    
+
     // 길찾기
     private IEnumerator MoveCharacterToTarget(Animator characterAnimator)
     {
@@ -310,13 +310,13 @@ public class TileGenerator_Quad : MonoBehaviour
             Debug.Log("이동 불가 처리 받음");
             yield break;
         }
-        
+
         // 애니메이션을 Walking 상태로 변경
         if (characterAnimator != null)
         {
             characterAnimator.SetBool("walking", true);
         }
-        
+
         // 리스트 수신후 반복처리
         foreach (TileScript tilePos in path)
         {
@@ -329,7 +329,7 @@ public class TileGenerator_Quad : MonoBehaviour
         {
             characterAnimator.SetBool("walking", false);
         }
-        
+
         RotateCharacterToFront();
     }
 

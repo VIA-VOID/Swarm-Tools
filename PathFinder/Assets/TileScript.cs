@@ -10,6 +10,26 @@ public struct Pos
 {
     public int x;
     public int y;
+
+    public Pos(int x, int y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Pos other)
+        {
+            return this.x == other.x && this.y == other.y;
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(x, y);
+    }
 }
 
 [StructLayout(LayoutKind.Sequential)]
