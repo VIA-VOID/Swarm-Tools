@@ -10,8 +10,10 @@ using UnityEngine.Serialization;
 using UnityEngine.UI;
 using UnityEngine.WSA;
 
-public class TileCreator : MonoBehaviour
+public class TileCreator : GenericSingleton<TileCreator>
 {
+    #region Inspector 보이는 변수
+    
     [LabelText("맵 크기")]
     [SerializeField] private Vector2 mapSize; // 맵 크기
     
@@ -30,13 +32,6 @@ public class TileCreator : MonoBehaviour
     }
     [LabelText("베이스 타일")]
     [SerializeField] private GameObject baseTilePrefab;
-
-    [Title("카메라 컨트롤")]
-    [LabelText("카메라 거리")]
-    [OnValueChanged("ChangeCameraHeight")]
-    [SerializeField] private int cameraHeight;
-    [LabelText("카메라 각도")]
-    [SerializeField] private Slider cameraAngleSlider;
     
     [Title("맵 데이터 관련")]
     [LabelText("맵 데이터 리스트")]
@@ -46,16 +41,22 @@ public class TileCreator : MonoBehaviour
     [TitleGroup("현재 상태")]
     [EnumToggleButtons, HideLabel]
     public EditStatus pathFinderEnum;
+
+    [LabelText("타일 브러시"), InlineEditor]
+    [SerializeField, ReadOnly] private GameObject selectedTilePrefab;
+
+    [LabelText("카메라 컨트롤러")]
+    [SerializeField] private CameraController cameraController;
     
+    #endregion
+    
+    #region private 변수
+
     // 타일 관리 딕셔너리
     private Dictionary<Vector3, GameObject> quadTiles = new Dictionary<Vector3, GameObject>();
     // 타일 좌표 딕셔너리
     private Dictionary<Vector2Int, TileScript> tileMap = new Dictionary<Vector2Int, TileScript>();
     
-    // 생성된 캐릭터
-    private GameObject spawnedCharacter;
-    // 사용중인 메인 카메라
-    private Camera mainCamera;
     // 시작 타일 오브젝트
     private GameObject startTileObj;
     // 종료 타일 오브젝트
@@ -64,16 +65,16 @@ public class TileCreator : MonoBehaviour
     private Coroutine moveCoroutine = null;
     
     private float cameraAngle;
+    private Vector3 cameraMoveDirection; // 이동 방향 저장
+    private float cameraAngleX;
     
     private const string prefabPath = "Prefabs/TilePrefabs";
     
     private List<GameObject> tilePrefabs = new List<GameObject>();
-    public List<TileScript> testList;
-    
-    [FormerlySerializedAs("selectedPrefab")]
-    [LabelText("타일 브러시"), InlineEditor]
-    [SerializeField, ReadOnly] private GameObject selectedTilePrefab;
 
+    #endregion
+
+    public List<TileScript> testList;
     [TitleGroup("현재 상태")]
     [Button("타일 브러시 변경")]
     private void OpenTileBrushPrefabSelector()
@@ -98,13 +99,16 @@ public class TileCreator : MonoBehaviour
     
     private void Start()
     {
-        mainCamera = Camera.main;
-
         LoadTilePrefabs();
     }
 
     #region Public Functions
 
+    public Vector2 GetMapSize()
+    {
+        return mapSize;
+    }
+    
     #endregion
 
     void Update()
@@ -176,17 +180,8 @@ public class TileCreator : MonoBehaviour
         }
     }
 
-    void ChangeCameraHeight()
-    {
-        Vector3 originPos = mainCamera.transform.position;
 
-        mainCamera.transform.position = new Vector3(originPos.x, cameraHeight, originPos.z);
-    }
 
-    void ChangeCameraAngle()
-    {
-        
-    }
     
     [Title("제어 버튼")]
     [Button("맵 생성")]
@@ -202,12 +197,7 @@ public class TileCreator : MonoBehaviour
         {
             StopCoroutine(moveCoroutine);
         }
-    
-        if (spawnedCharacter != null)
-        {
-            Destroy(spawnedCharacter);
-        }
-    
+
         foreach (Transform child in transform)
         {
             Destroy(child.gameObject);
@@ -241,9 +231,9 @@ public class TileCreator : MonoBehaviour
 
         Camera.main.transform.position = new Vector3(cameraPos, mapSize.y, cameraPos);
 
-        cameraHeight = (int)mapSize.y;
+        cameraController.cameraHeight = (int)mapSize.y;
         
-        ChangeCameraHeight();
+        cameraController.ChangeCameraHeight();
     }
     
     void ChangeTileColor(GameObject tile, Color color)
@@ -258,7 +248,7 @@ public class TileCreator : MonoBehaviour
         newMaterial.color = color;
         tileRenderer.material = newMaterial;
     }
-
+    
     void LoadTilePrefabs()
     {
         tilePrefabs.Clear();
