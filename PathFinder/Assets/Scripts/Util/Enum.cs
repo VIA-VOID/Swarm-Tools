@@ -13,6 +13,14 @@ public enum CreateStatus
     SetWater
 }
 
+[System.Flags]
+public enum PathFindType
+{
+    AStar = 1 << 1,
+    AStarDirect = 1 << 2,
+    All = AStar | AStarDirect
+}
+
 public enum Direction8
 {
     Up,         // 위

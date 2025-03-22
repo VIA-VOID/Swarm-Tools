@@ -25,6 +25,8 @@ public class TileGenerator_Quad : MonoBehaviour
     [SerializeField] private GameObject hexPrefabWater;
     [LabelText("타일 값 UI 프리팹")]
     [SerializeField] private GameObject tileValueTextObj; // UI 프리팹
+    [LabelText("타일 디폴트 Material")]
+    [SerializeField] private Material originalMaterial = null;
     [LabelText("맵 크기")]
     [SerializeField] private int mapSize = 3; // 맵 크기
     [LabelText("메인 UI 캔버스")]
@@ -61,7 +63,6 @@ public class TileGenerator_Quad : MonoBehaviour
     private Dictionary<GameObject, GameObject> tileValueTexts = new Dictionary<GameObject, GameObject>(); // 타일별 UI 관리
     // 타일 좌표 딕셔너리
     private Dictionary<Vector2Int, TileScript> tileMap = new Dictionary<Vector2Int, TileScript>();
-
     // 생성된 캐릭터
     private GameObject spawnedCharacter;
     // 사용중인 메인 카메라
@@ -75,6 +76,8 @@ public class TileGenerator_Quad : MonoBehaviour
     // 움직임 코루틴
     private Coroutine moveCoroutine = null;
 
+    private LineRenderer pathLine;
+    
     private List<TileScript> path;
     private List<TileScript> allPath;
 
@@ -151,81 +154,124 @@ public class TileGenerator_Quad : MonoBehaviour
 
     #region Public Functions
 
-    [Title("제어 버튼")]
+    [TitleGroup("제어 버튼")]
+    [PropertyOrder(0)]
     [Button("맵 생성")]
     public void GenerateTileMap()
     {
         GenerateQuadTileMap(Mathf.Max(mapSize, 1));
     }
-
-    [Button("길찾기 알고리즘 실행")]
-    public void FindBestLoad()
+    
+    [TitleGroup("길찾기 모드 선택")]
+    [PropertyOrder(1)]
+    [EnumToggleButtons]
+    [HideLabel]
+    [InlineButton("FindBestLoad",  SdfIconType.CompassFill, "길찾기 실행")]
+    public PathFindType pathFindType;
+    private void FindBestLoad()
     {
-        if (startTileObj == null || endTileObj == null)
+        if (startTileData == null || endTileData == null)
         {
             Debug.LogWarning("시작 지점과 도착지점을 모두 지정해야 합니다.");
             return;
         }
-
+        
+        if (pathFindType == 0)
+        {
+            Debug.Log("타입을 하나는 선택해야 합니다.");
+            return; 
+        }
+        
         SetTileData();
 
         Debug.Log("길찾기 알고리즘 실행");
 
-        SpawnCharacterAtStart();
-    }
+        //SpawnCharacterAtStart();
 
-
-    [Button("타일 값 표시")]
-    public void ShowTileValues()
-    {
-        foreach (var tileEntry in quadTiles)
+        if (moveCoroutine != null)
         {
-            GameObject tile = tileEntry.Value;
-
-            if (tileValueTexts.ContainsKey(tile))
-            {
-                // UI가 이미 존재하면 활성화
-                tileValueTexts[tile].SetActive(true);
-            }
-            else
-            {
-                // UI가 없으면 새로 생성
-                GameObject textObj = Instantiate(tileValueTextObj, mainCanvas.transform);
-                textObj.SetActive(true);
-                tileValueTexts[tile] = textObj;
-            }
+            return;
         }
 
-        UpdateTileTextPositions();
-    }
-
-    [Button("타일 값 숨기기")]
-    public void HideTileValues()
-    {
-        foreach (var textObj in tileValueTexts.Values)
+        // 시작, 종료지점 외 모든 타일 초기화
+        foreach (var tiles in tileDatas)
         {
-            if (textObj != null)
-            {
-                textObj.SetActive(false);
-            }
+            if (tiles == startTileData || tiles == endTileData || !tiles.GetComponent<TileScript>().IsMovable() ) continue;
+            
+            ChangeTileColor(tiles.gameObject, Color.white);
         }
+
+        // 알고리즘 실행
+        switch (pathFindType)
+        {
+            case PathFindType.AStar:
+                moveCoroutine = StartCoroutine(ChangeTilesSequentially(allPath, path));
+                DrawPathLine(path, Color.yellow);
+                break;
+            case PathFindType.AStarDirect:
+                Debug.Log("직선경로 실행");
+                DrawPathLine(path, Color.red);
+                //TODO 직선경로 실행 여기 넣기
+                break;
+            case PathFindType.All:
+                moveCoroutine = StartCoroutine(ChangeTilesSequentially(allPath, path));
+                Debug.Log("직선경로 실행");
+                //TODO 직선경로 실행 여기 넣기
+                break;
+        }
+        
     }
+    
+    //미사용 처리
+    // void ShowTileValues()
+    // {
+    //     foreach (var tileEntry in quadTiles)
+    //     {
+    //         GameObject tile = tileEntry.Value;
+    //
+    //         if (tileValueTexts.ContainsKey(tile))
+    //         {
+    //             // UI가 이미 존재하면 활성화
+    //             tileValueTexts[tile].SetActive(true);
+    //         }
+    //         else
+    //         {
+    //             // UI가 없으면 새로 생성
+    //             GameObject textObj = Instantiate(tileValueTextObj, mainCanvas.transform);
+    //             textObj.SetActive(true);
+    //             tileValueTexts[tile] = textObj;
+    //         }
+    //     }
+    //
+    //     UpdateTileTextPositions();
+    // }
+    //
+    // void HideTileValues()
+    // {
+    //     foreach (var textObj in tileValueTexts.Values)
+    //     {
+    //         if (textObj != null)
+    //         {
+    //             textObj.SetActive(false);
+    //         }
+    //     }
+    // }
 
     #endregion
 
-    void SpawnCharacterAtStart()
-    {
-        if (spawnedCharacter != null)
-        {
-            Destroy(spawnedCharacter); // 기존 캐릭터 제거
-        }
-
-        if (startTileObj != null)
-        {
-            // 모든 타일을 기본 색상(lilac)으로 순차적으로 변경
-            StartCoroutine(ChangeTilesSequentially(allPath, path));
-        }
-    }
+    // void SpawnCharacterAtStart()
+    // {
+    //     if (spawnedCharacter != null)
+    //     {
+    //         Destroy(spawnedCharacter); // 기존 캐릭터 제거
+    //     }
+    //
+    //     if (startTileObj != null)
+    //     {
+    //         // 모든 타일을 기본 색상(lilac)으로 순차적으로 변경
+    //         StartCoroutine(ChangeTilesSequentially(allPath, path));
+    //     }
+    // }
 
     // 순차적으로 색 변경 (기본 색 설정)
     private IEnumerator ChangeTilesSequentially(List<TileScript> allTiles, List<TileScript> calTiles)
@@ -249,27 +295,25 @@ public class TileGenerator_Quad : MonoBehaviour
             yield return new WaitForSeconds(0.05f); // 타일을 하나씩 색 변경
         }
 
-        Vector3 spawnPosition = startTileObj.transform.position;
-        spawnedCharacter = Instantiate(characterPrefab, spawnPosition, Quaternion.identity);
-
-        // 애니메이터 가져오기
-        Animator characterAnimator = spawnedCharacter.GetComponent<Animator>();
-
-        if (endTileObj != null)
-        {
-            Vector3 lookDirection = endTileObj.transform.position - startTileObj.transform.position;
-            lookDirection.y = 0; // 수직 방향 회전 방지
-            spawnedCharacter.transform.rotation = Quaternion.LookRotation(lookDirection);
-
-            if (characterAnimator != null)
-            {
-                // 이동 시작
-                if (moveCoroutine != null)
-                    StopCoroutine(moveCoroutine);
-
-                moveCoroutine = StartCoroutine(MoveCharacterToTarget(characterAnimator));
-            }
-        }
+        moveCoroutine = null;
+        
+        // Vector3 spawnPosition = startTileObj.transform.position;
+        // spawnedCharacter = Instantiate(characterPrefab, spawnPosition, Quaternion.identity);
+        //
+        // // 애니메이터 가져오기
+        // Animator characterAnimator = spawnedCharacter.GetComponent<Animator>();
+        //
+        // if (endTileObj != null)
+        // {
+        //     Vector3 lookDirection = endTileObj.transform.position - startTileObj.transform.position;
+        //     lookDirection.y = 0; // 수직 방향 회전 방지
+        //     spawnedCharacter.transform.rotation = Quaternion.LookRotation(lookDirection);
+        //
+        //     if (characterAnimator != null)
+        //     {
+        //         StartCoroutine(MoveCharacterToTarget(characterAnimator));
+        //     }
+        // }
     }
 
     // 뿅뿅 애니메이션 (타일 크기 변화)
@@ -303,35 +347,35 @@ public class TileGenerator_Quad : MonoBehaviour
     }
 
     // 길찾기
-    private IEnumerator MoveCharacterToTarget(Animator characterAnimator)
-    {
-        if (path == null)
-        {
-            Debug.Log("이동 불가 처리 받음");
-            yield break;
-        }
-
-        // 애니메이션을 Walking 상태로 변경
-        if (characterAnimator != null)
-        {
-            characterAnimator.SetBool("walking", true);
-        }
-
-        // 리스트 수신후 반복처리
-        foreach (TileScript tilePos in path)
-        {
-            // 타일 위치까지 이동
-            yield return StartCoroutine(MovePosToTarget(tilePos.transform.position));
-        }
-
-        // 이동이 끝나면 애니메이션을 멈춤
-        if (characterAnimator != null)
-        {
-            characterAnimator.SetBool("walking", false);
-        }
-
-        RotateCharacterToFront();
-    }
+    // private IEnumerator MoveCharacterToTarget(Animator characterAnimator)
+    // {
+    //     if (path == null)
+    //     {
+    //         Debug.Log("이동 불가 처리 받음");
+    //         yield break;
+    //     }
+    //
+    //     // 애니메이션을 Walking 상태로 변경
+    //     if (characterAnimator != null)
+    //     {
+    //         characterAnimator.SetBool("walking", true);
+    //     }
+    //
+    //     // 리스트 수신후 반복처리
+    //     foreach (TileScript tilePos in path)
+    //     {
+    //         // 타일 위치까지 이동
+    //         yield return StartCoroutine(MovePosToTarget(tilePos.transform.position));
+    //     }
+    //
+    //     // 이동이 끝나면 애니메이션을 멈춤
+    //     if (characterAnimator != null)
+    //     {
+    //         characterAnimator.SetBool("walking", false);
+    //     }
+    //
+    //     RotateCharacterToFront();
+    // }
 
     private IEnumerator MovePosToTarget(Vector3 targetPos)
     {
@@ -393,6 +437,16 @@ public class TileGenerator_Quad : MonoBehaviour
 
                         selectedTile.tag = "QuadTile";
 
+                        if (getTileScript == startTileData)
+                        {
+                            startTileData = null;
+                        }
+
+                        if (getTileScript == endTileData)
+                        {
+                            endTileData = null;
+                        }
+                        
                         if (getTileScript != null)
                         {
                             getTileScript.SetMovable(true); // 이동 가능 블록으로 재변경
@@ -534,27 +588,63 @@ public class TileGenerator_Quad : MonoBehaviour
         Renderer tileRenderer = child.GetComponent<Renderer>();
         if (tileRenderer == null) return;
 
-        // 기본 흰색 머티리얼을 생성한 후 색상을 적용
-        Material whiteMaterial = new Material(Shader.Find("Standard"));
-        whiteMaterial.color = Color.white; // 기본 흰색 설정
-        tileRenderer.material = whiteMaterial; // 흰색으로 초기화 후
-        tileRenderer.material.color = color; // 원하는 색상 적용
-    }
-
-    void UpdateTileTextPositions()
-    {
-        foreach (var tileEntry in tileValueTexts)
+        // 새로운 메터리얼 생성하고 색상 적용
+        if (color != Color.white)
         {
-            GameObject tile = tileEntry.Key;
-            GameObject textObj = tileEntry.Value;
-
-            if (tile == null || textObj == null) continue;
-
-            Vector3 worldPosition = tile.transform.position + Vector3.up * 1.5f; // 타일 위쪽으로 배치
-            Vector2 screenPosition = Camera.main.WorldToScreenPoint(worldPosition);
-
-            // UI 요소의 위치를 조정
-            textObj.GetComponent<RectTransform>().position = screenPosition;
+            Material coloredMaterial = new Material(Shader.Find("Standard"));
+            coloredMaterial.color = color;
+            tileRenderer.material = coloredMaterial;
+        }
+        else
+        {
+            // 하얀색은 되돌리기 처리
+            
+            tileRenderer.material = originalMaterial;
+            
+            tileRenderer.material.color = Color.white;
         }
     }
+    
+    // 경로선 그리기
+    private void DrawPathLine(List<TileScript> calTiles, Color color)
+    {
+        if(pathLine != null)
+            Destroy(pathLine.gameObject);
+        
+        GameObject lineObj = new GameObject("PathLine");
+        pathLine = lineObj.AddComponent<LineRenderer>();
+
+        pathLine.material = new Material(Shader.Find("Sprites/Default"));
+        pathLine.widthMultiplier = 0.1f;
+        pathLine.positionCount = 0;
+        pathLine.startColor = color;
+        pathLine.endColor = color;
+        pathLine.useWorldSpace = true;
+
+        pathLine.positionCount = calTiles.Count;
+
+        for (int i = 0; i < calTiles.Count; i++)
+        {
+            Vector3 pos = calTiles[i].transform.position;
+            pos.y = 1f; // y값 1로 고정
+            pathLine.SetPosition(i, pos);
+        }
+    }
+
+    // void UpdateTileTextPositions()
+    // {
+    //     foreach (var tileEntry in tileValueTexts)
+    //     {
+    //         GameObject tile = tileEntry.Key;
+    //         GameObject textObj = tileEntry.Value;
+    //
+    //         if (tile == null || textObj == null) continue;
+    //
+    //         Vector3 worldPosition = tile.transform.position + Vector3.up * 1.5f; // 타일 위쪽으로 배치
+    //         Vector2 screenPosition = Camera.main.WorldToScreenPoint(worldPosition);
+    //
+    //         // UI 요소의 위치를 조정
+    //         textObj.GetComponent<RectTransform>().position = screenPosition;
+    //     }
+    // }
 }
