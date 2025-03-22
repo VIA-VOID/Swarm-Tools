@@ -36,11 +36,10 @@ public class TileCreator : GenericSingleton<TileCreator>
     [Title("맵 데이터 관련")]
     [LabelText("맵 데이터 리스트")]
     [SerializeField]private List<TileScript> tileDatas;
-
-    [FormerlySerializedAs("createStatus")]
+    
     [TitleGroup("현재 상태")]
     [EnumToggleButtons, HideLabel]
-    public EditStatus pathFinderEnum;
+    public EditStatus editStatusEnum;
 
     [LabelText("타일 브러시"), InlineEditor]
     [SerializeField, ReadOnly] private GameObject selectedTilePrefab;
@@ -72,6 +71,8 @@ public class TileCreator : GenericSingleton<TileCreator>
     
     private List<GameObject> tilePrefabs = new List<GameObject>();
 
+    private Coroutine stackingCoroutine = null;
+    
     #endregion
 
     public List<TileScript> testList;
@@ -125,8 +126,8 @@ public class TileCreator : GenericSingleton<TileCreator>
                 if (quadTiles.ContainsKey(pos) && quadTiles[pos].CompareTag("QuadTile"))
                 {
                     GameObject selectedTile = quadTiles[pos];
-
-                    if (pathFinderEnum == EditStatus.EraseToNormal)
+                    
+                    if (editStatusEnum == EditStatus.EraseToNormal)
                     {
                         TileScript getTileScript = selectedTile.gameObject.GetComponent<TileScript>();
                         
@@ -142,8 +143,14 @@ public class TileCreator : GenericSingleton<TileCreator>
                         }
                     }
 
-                    if (pathFinderEnum == EditStatus.ChangeTile)
+                    if (editStatusEnum == EditStatus.ChangeTile)
                     {
+                        if (selectedTilePrefab == null)
+                        {
+                            Debug.Log("변경할 타일 미선택");
+                            return;
+                        }
+                        
                         TileScript getTileScript = selectedTile.gameObject.GetComponent<TileScript>();
                         
                         getTileScript.SetTilePrefab(selectedTilePrefab);
@@ -156,7 +163,7 @@ public class TileCreator : GenericSingleton<TileCreator>
                         }
                     }
 
-                    if (pathFinderEnum == EditStatus.SetObject)
+                    if (editStatusEnum == EditStatus.SetObject)
                     {
                         TileScript getTileScript = selectedTile.gameObject.GetComponent<TileScript>();
                                          
@@ -170,6 +177,46 @@ public class TileCreator : GenericSingleton<TileCreator>
                         }
                     }
                 }
+            }
+        }
+        
+        // 마우스 버튼 누른 순간에만 코루틴 시작
+        if (Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            RaycastHit hit;
+            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                Vector3 pos = hit.collider.transform.position;
+
+                if (quadTiles.ContainsKey(pos) && quadTiles[pos].CompareTag("QuadTile"))
+                {
+                    GameObject selectedTile = quadTiles[pos];
+
+                    if (editStatusEnum == EditStatus.StackTile && stackingCoroutine == null)
+                    {
+                        TileScript getTileScript = selectedTile.gameObject.GetComponent<TileScript>();
+
+                        getTileScript.SetMovable(false);
+
+                        if (getTileScript != null)
+                        {
+                            getTileScript.SetMovable(false);
+                        }
+
+                        stackingCoroutine = StartCoroutine(StackTileCoroutine());
+                    }
+                }
+            }
+        }
+
+        if (Mouse.current.leftButton.wasReleasedThisFrame)
+        {
+            if (stackingCoroutine != null)
+            {
+                StopCoroutine(stackingCoroutine);
+                stackingCoroutine = null;
             }
         }
         
@@ -215,6 +262,7 @@ public class TileCreator : GenericSingleton<TileCreator>
                 TileScript getTile = tile.GetComponent<TileScript>();
                 getTile.SetTilePrefab(baseTilePrefab);
                 getTile.SetMovable(true);
+                getTile.SetTileStackAble(true);
                 getTile.SetTilePoint(x, y);
                 tile.tag = "QuadTile"; // 태그 설정
                 quadTiles.Add(transform.position + worldPos, tile);
@@ -258,5 +306,43 @@ public class TileCreator : GenericSingleton<TileCreator>
         tilePrefabs.AddRange(loadedPrefabs);
         
         Debug.Log($"타일 프리팹 {tilePrefabs.Count}개 로드 완료.");
+    }
+    
+    private IEnumerator StackTileCoroutine()
+    {
+        while (Mouse.current.leftButton.isPressed)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                Vector3 pos = hit.collider.transform.position;
+
+                if (quadTiles.ContainsKey(pos) && quadTiles[pos].CompareTag("QuadTile"))
+                {
+                    GameObject selectedTile = quadTiles[pos];
+                    TileScript tileScript = selectedTile.GetComponent<TileScript>();
+                    List<GameObject> stackObjList = tileScript.GetStackList();
+                    
+                    if (tileScript != null)
+                    {
+                        tileScript.SetMovable(false);
+
+                        if (stackObjList == null)
+                            stackObjList = new List<GameObject>();
+
+                        if (stackObjList.Count < 5)
+                        {
+                            Vector3 stackPos = selectedTile.transform.position + Vector3.up * (1f + stackObjList.Count);
+                            GameObject stackedObj = Instantiate(selectedTilePrefab, stackPos, Quaternion.identity, selectedTile.transform);
+                            stackedObj.layer = LayerMask.NameToLayer("Ignore Raycast");
+                            stackObjList.Add(stackedObj);
+                        }
+                    }
+                }
+            }
+
+            yield return new WaitForSeconds(1f);
+        }
     }
 }

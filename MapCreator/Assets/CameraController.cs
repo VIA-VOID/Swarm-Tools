@@ -11,7 +11,6 @@ public class CameraController : MonoBehaviour
     [LabelText("카메라 거리")]
     [OnValueChanged("ChangeCameraHeight")]
     public int cameraHeight;
-    [OnValueChanged("ChangeCameraAngle")]
     [LabelText("카메라 각도 슬라이더")]
     [SerializeField] private Slider cameraAngleSlider;
     [LabelText("카메라 이동 속도")]
@@ -29,7 +28,9 @@ public class CameraController : MonoBehaviour
 
     private Camera mainCamera;
     private float moveDuration = 0.5f;
+    public bool isRightMouseDown = false;
     private float cameraAngleX;
+    private Vector2 previousMousePos;
 
     private void Start()
     {
@@ -47,6 +48,8 @@ public class CameraController : MonoBehaviour
         HandleCameraMovement();
 
         HandleCameraZoom();
+
+        ChangeCameraAngle();
     }
 
     void SetDefault()
@@ -97,15 +100,38 @@ public class CameraController : MonoBehaviour
         mainCamera.transform.position = new Vector3(originPos.x, cameraHeight, originPos.z);
     }
     
-    void ChangeCameraAngle()
+    public void ChangeCameraAngle()
     {
         if (mainCamera == null) return;
 
-        // 슬라이더 값 (0 ~ 1) → 각도 60 ~ 90도로 매핑
-        cameraAngleX = Mathf.Lerp(60f, 90f, cameraAngleSlider.value);
-        
-        Vector3 currentRotation = mainCamera.transform.rotation.eulerAngles;
-        mainCamera.transform.rotation = Quaternion.Euler(cameraAngleX, currentRotation.y, currentRotation.z);
+        Mouse mouse = Mouse.current;
+        if (mouse == null) return;
+
+        // 오른쪽 마우스 버튼 상태 체크
+        if (mouse.rightButton.wasPressedThisFrame)
+        {
+            isRightMouseDown = true;
+            previousMousePos = mouse.position.ReadValue();
+        }
+        else if (mouse.rightButton.wasReleasedThisFrame)
+        {
+            isRightMouseDown = false;
+        }
+
+        // 드래그 처리
+        if (isRightMouseDown)
+        {
+            Vector2 currentMousePos = mouse.position.ReadValue();
+            float deltaY = currentMousePos.y - previousMousePos.y;
+
+            cameraAngleX -= deltaY * 0.2f * Time.deltaTime;
+            cameraAngleX = Mathf.Clamp(cameraAngleX, 60, 90);
+
+            Vector3 currentRotation = mainCamera.transform.rotation.eulerAngles;
+            mainCamera.transform.rotation = Quaternion.Euler(cameraAngleX, currentRotation.y, currentRotation.z);
+
+            previousMousePos = currentMousePos;
+        }
     }
     
     void HandleCameraMovement()
@@ -158,8 +184,8 @@ public class CameraController : MonoBehaviour
 
             Vector2 mapSize = tileCreator.GetMapSize();
             
-            // 최소/최대 Y값 제한 (맵 크기 ~ 맵 크기의 3배)
-            float minY = mapSize.y;
+            // 최소/최대 Y값 제한 (맵 크기 1/10 ~ 맵 크기의 3배)
+            float minY = mapSize.y * 0.1f;
             float maxY = mapSize.y * 3;
             targetY = Mathf.Clamp(targetY, minY, maxY);
 

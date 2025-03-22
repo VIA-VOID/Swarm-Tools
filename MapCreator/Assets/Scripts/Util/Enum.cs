@@ -20,7 +20,9 @@ public enum EditStatus
     [LabelText("타일 변경")]
     ChangeTile,
     [LabelText("오브젝트 설치")]
-    SetObject
+    SetObject,
+    [LabelText("타일 쌓기")]
+    StackTile
 }
 
 public enum PrefabType

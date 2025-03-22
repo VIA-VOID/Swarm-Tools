@@ -27,6 +27,8 @@ public class TileScript : MonoBehaviour
     [SerializeField, ReadOnly] private Pos tilePoint;
     [SerializeField, ReadOnly] private GameObject tileObj;
     [SerializeField, ReadOnly] private GameObject objectObj;
+    [SerializeField, ReadOnly] private List<GameObject> stackObjList;
+    [SerializeField, ReadOnly] private bool isStackAble;
 
     public void SetTilePoint(int x, int y)
     {
@@ -41,7 +43,7 @@ public class TileScript : MonoBehaviour
     }
     
     // isMovable 값을 반환하는 메소드
-    public bool IsMovable()
+    public bool GetIsMovable()
     {
         return isMovable;
     }
@@ -70,5 +72,20 @@ public class TileScript : MonoBehaviour
         }
 
         objectObj = Instantiate(objectPrefab, transform);
+    }
+
+    public bool GetIsStackAble()
+    {
+        return isStackAble;
+    }
+
+    public void SetTileStackAble(bool movable)
+    {
+        isStackAble = movable;
+    }
+
+    public List<GameObject> GetStackList()
+    {
+        return stackObjList;
     }
 }
