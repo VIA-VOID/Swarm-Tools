@@ -173,19 +173,19 @@ public class CameraController : MonoBehaviour
         // 키 입력 감지
         if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed)
         {
-            moveDirection += Vector3.forward;
+            moveDirection += mainCamera.transform.forward;
         }
         if (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed)
         {
-            moveDirection += Vector3.back;
+            moveDirection -= mainCamera.transform.forward;
         }
         if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)
         {
-            moveDirection += Vector3.left;
+            moveDirection -= mainCamera.transform.right;
         }
         if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)
         {
-            moveDirection += Vector3.right;
+            moveDirection += mainCamera.transform.right;
         }
 
         // 이동 실행
