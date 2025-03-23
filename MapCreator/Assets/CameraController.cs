@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -18,31 +20,51 @@ public class CameraController : MonoBehaviour
     [LabelText("카메라 줌 속도")]
     [SerializeField] private float zoomSpeed = 10f;
     
-    [LabelText("각도 컨트롤 활성화 패널")]
-    [SerializeField] private GameObject controlPanel;
-    [LabelText("각도 컨트롤 비활성화 패널")]
-    [SerializeField] private GameObject defaultPanel;
+    // [LabelText("각도 컨트롤 활성화 패널")]
+    // [SerializeField] private GameObject controlPanel;
+    // [LabelText("각도 컨트롤 비활성화 패널")]
+    // [SerializeField] private GameObject defaultPanel;
+    //
+    // [LabelText("패널 비활성화 버튼")]
+    // [SerializeField] private GameObject panelOffButton;
 
-    [LabelText("패널 비활성화 버튼")]
-    [SerializeField] private GameObject panelOffButton;
-
+    private TileCreator tileCreator; 
     private Camera mainCamera;
     private float moveDuration = 0.5f;
-    public bool isRightMouseDown = false;
-    private float cameraAngleX;
+    private bool isRightMouseDown = false;
+
+    [LabelText("카메라 각도 속도")]
+    [OnValueChanged("ChangeCameraAngleSpeed")]
+    [SerializeField]private float cameraAngleSpeed = 0.5f;
+    private void ChangeCameraAngleSpeed()
+    {
+        cameraAngleX = cameraAngleSpeed;
+        cameraAngleY = cameraAngleSpeed;
+    }
+    
+    private float cameraAngleX = 0.5f;
+    private float cameraAngleY = 0.5f;
+    
     private Vector2 previousMousePos;
 
     private void Start()
     {
         mainCamera = Camera.main;
 
-        Vector3 originPos = defaultPanel.GetComponent<RectTransform>().position;
+        // Vector3 originPos = defaultPanel.GetComponent<RectTransform>().position;
+        //
+        // defaultPanel.GetComponent<RectTransform>().position = new Vector3(0, originPos.y, originPos.z);
 
-        defaultPanel.GetComponent<RectTransform>().position = new Vector3(0, originPos.y, originPos.z);
-
-        SetDefault();
+        tileCreator = TileCreator.Instance;
     }
 
+    IEnumerator WaitForMapCreateCor()
+    {
+        yield return new WaitUntil(() => tileCreator.GetInitStatus());
+        
+        SetDefault(tileCreator.GetMapSize());
+    }
+    
     private void Update()
     {
         HandleCameraMovement();
@@ -52,46 +74,46 @@ public class CameraController : MonoBehaviour
         ChangeCameraAngle();
     }
 
-    void SetDefault()
+    void SetDefault(int mapSize)
     {
-        cameraMoveSpeed = 5f;
-        zoomSpeed = 10f;
+        cameraMoveSpeed = mapSize;
+        zoomSpeed = mapSize / 0.01f;
     }
     
-    public void MovePanelToZero(bool isOn)
-    {
-        RectTransform onPanelRect = controlPanel.GetComponent<RectTransform>();
-        RectTransform offPanelRect = defaultPanel.GetComponent<RectTransform>();
-
-        if (isOn)
-        {
-            offPanelRect.DOAnchorPosX(-100, moveDuration)
-                .SetEase(Ease.OutCubic)
-                .OnComplete(() =>
-                {
-                    defaultPanel.SetActive(!isOn);
-            
-                    controlPanel.SetActive(isOn);
-                    onPanelRect.DOAnchorPosX(0, moveDuration).SetEase(Ease.OutCubic);
-                    
-                    panelOffButton.SetActive(true);
-                });
-        }
-        else
-        {
-            panelOffButton.SetActive(false);
-            
-            onPanelRect.DOAnchorPosX(-100, moveDuration)
-                .SetEase(Ease.OutCubic)
-                .OnComplete(() =>
-                {
-                    controlPanel.SetActive(isOn);
-                    
-                    defaultPanel.SetActive(!isOn);
-                    offPanelRect.DOAnchorPosX(0, moveDuration).SetEase(Ease.OutCubic);
-                });
-        }
-    }
+    // public void MovePanelToZero(bool isOn)
+    // {
+    //     RectTransform onPanelRect = controlPanel.GetComponent<RectTransform>();
+    //     RectTransform offPanelRect = defaultPanel.GetComponent<RectTransform>();
+    //
+    //     if (isOn)
+    //     {
+    //         offPanelRect.DOAnchorPosX(-100, moveDuration)
+    //             .SetEase(Ease.OutCubic)
+    //             .OnComplete(() =>
+    //             {
+    //                 defaultPanel.SetActive(!isOn);
+    //         
+    //                 controlPanel.SetActive(isOn);
+    //                 onPanelRect.DOAnchorPosX(0, moveDuration).SetEase(Ease.OutCubic);
+    //                 
+    //                 panelOffButton.SetActive(true);
+    //             });
+    //     }
+    //     else
+    //     {
+    //         panelOffButton.SetActive(false);
+    //         
+    //         onPanelRect.DOAnchorPosX(-100, moveDuration)
+    //             .SetEase(Ease.OutCubic)
+    //             .OnComplete(() =>
+    //             {
+    //                 controlPanel.SetActive(isOn);
+    //                 
+    //                 defaultPanel.SetActive(!isOn);
+    //                 offPanelRect.DOAnchorPosX(0, moveDuration).SetEase(Ease.OutCubic);
+    //             });
+    //     }
+    // }
     
     public void ChangeCameraHeight()
     {
@@ -112,6 +134,9 @@ public class CameraController : MonoBehaviour
         {
             isRightMouseDown = true;
             previousMousePos = mouse.position.ReadValue();
+
+            // 현재 카메라 각도를 기준으로 초기화
+            cameraAngleX = mainCamera.transform.rotation.eulerAngles.x;
         }
         else if (mouse.rightButton.wasReleasedThisFrame)
         {
@@ -122,13 +147,18 @@ public class CameraController : MonoBehaviour
         if (isRightMouseDown)
         {
             Vector2 currentMousePos = mouse.position.ReadValue();
-            float deltaY = currentMousePos.y - previousMousePos.y;
+            Vector2 delta = currentMousePos - previousMousePos;
 
-            cameraAngleX -= deltaY * 0.2f * Time.deltaTime;
-            cameraAngleX = Mathf.Clamp(cameraAngleX, 60, 90);
+            // 마우스 이동에 따라 회전 각도 조절
+            cameraAngleX -= delta.y * 0.2f; // 상하
+            cameraAngleY += delta.x * 0.2f; // 좌우
 
-            Vector3 currentRotation = mainCamera.transform.rotation.eulerAngles;
-            mainCamera.transform.rotation = Quaternion.Euler(cameraAngleX, currentRotation.y, currentRotation.z);
+            // 상하 각도는 보통 -90~90 정도로 제한 (원하면 제한 없이도 가능)
+            cameraAngleX = Mathf.Clamp(cameraAngleX, -90f, 90f);
+
+            // 회전 적용
+            Quaternion rotation = Quaternion.Euler(cameraAngleX, cameraAngleY, 0f);
+            mainCamera.transform.rotation = rotation;
 
             previousMousePos = currentMousePos;
         }
@@ -167,8 +197,6 @@ public class CameraController : MonoBehaviour
 
     void HandleCameraZoom()
     {
-        TileCreator tileCreator = TileCreator.Instance;
-        
         if (mainCamera == null) return;
 
         // 마우스 휠 값 가져오기 (위로 돌리면 양수, 아래로 돌리면 음수)
@@ -182,13 +210,8 @@ public class CameraController : MonoBehaviour
             // 목표 Y값 계산 (스크롤 방향에 따라 증가/감소)
             float targetY = cameraPos.y - scrollInput * zoomSpeed * Time.deltaTime;
 
-            Vector2 mapSize = tileCreator.GetMapSize();
+            //int mapSize = tileCreator.GetMapSize();
             
-            // 최소/최대 Y값 제한 (맵 크기 1/10 ~ 맵 크기의 3배)
-            float minY = mapSize.y * 0.1f;
-            float maxY = mapSize.y * 3;
-            targetY = Mathf.Clamp(targetY, minY, maxY);
-
             // 카메라 Y값 적용
             mainCamera.transform.position = new Vector3(cameraPos.x, targetY, cameraPos.z);
         }

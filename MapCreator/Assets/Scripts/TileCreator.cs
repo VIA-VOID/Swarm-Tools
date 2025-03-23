@@ -63,15 +63,19 @@ public class TileCreator : GenericSingleton<TileCreator>
     // 움직임 코루틴
     private Coroutine moveCoroutine = null;
     
-    private float cameraAngle;
-    private Vector3 cameraMoveDirection; // 이동 방향 저장
-    private float cameraAngleX;
-    
     private const string prefabPath = "Prefabs/TilePrefabs";
     
     private List<GameObject> tilePrefabs = new List<GameObject>();
 
     private Coroutine stackingCoroutine = null;
+    
+    private float stackDelay = 0.3f;
+    
+    private float lastStackTime = 0f;
+    
+    private bool isMapCreated = false;
+
+    private int calMapSize;
     
     #endregion
 
@@ -105,9 +109,14 @@ public class TileCreator : GenericSingleton<TileCreator>
 
     #region Public Functions
 
-    public Vector2 GetMapSize()
+    public int GetMapSize()
     {
-        return mapSize;
+        return calMapSize;
+    }
+
+    public bool GetInitStatus()
+    {
+        return isMapCreated;
     }
     
     #endregion
@@ -163,6 +172,32 @@ public class TileCreator : GenericSingleton<TileCreator>
                         }
                     }
 
+                    if (editStatusEnum == EditStatus.StackTile)
+                    {
+                        // 시간 체크
+                        if (Time.time - lastStackTime < stackDelay) return;
+    
+                        TileScript tileScript = selectedTile.GetComponent<TileScript>();
+                        List<GameObject> stackObjList = tileScript.GetStackList();
+
+                        if (tileScript != null)
+                        {
+                            tileScript.SetMovable(false);
+
+                            if (stackObjList == null)
+                                stackObjList = new List<GameObject>();
+
+                            if (stackObjList.Count < 5)
+                            {
+                                Vector3 stackPos = selectedTile.transform.position + Vector3.up * (1f + stackObjList.Count);
+                                GameObject stackedObj = Instantiate(selectedTilePrefab, stackPos, Quaternion.identity, selectedTile.transform);
+                                stackedObj.layer = LayerMask.NameToLayer("Ignore Raycast");
+                                stackObjList.Add(stackedObj);
+                                lastStackTime = Time.time; // 시간 갱신
+                            }
+                        }
+                    }
+                    
                     if (editStatusEnum == EditStatus.SetObject)
                     {
                         TileScript getTileScript = selectedTile.gameObject.GetComponent<TileScript>();
@@ -180,55 +215,12 @@ public class TileCreator : GenericSingleton<TileCreator>
             }
         }
         
-        // 마우스 버튼 누른 순간에만 코루틴 시작
-        if (Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-
-            if (Physics.Raycast(ray, out hit))
-            {
-                Vector3 pos = hit.collider.transform.position;
-
-                if (quadTiles.ContainsKey(pos) && quadTiles[pos].CompareTag("QuadTile"))
-                {
-                    GameObject selectedTile = quadTiles[pos];
-
-                    if (editStatusEnum == EditStatus.StackTile && stackingCoroutine == null)
-                    {
-                        TileScript getTileScript = selectedTile.gameObject.GetComponent<TileScript>();
-
-                        getTileScript.SetMovable(false);
-
-                        if (getTileScript != null)
-                        {
-                            getTileScript.SetMovable(false);
-                        }
-
-                        stackingCoroutine = StartCoroutine(StackTileCoroutine());
-                    }
-                }
-            }
-        }
-
-        if (Mouse.current.leftButton.wasReleasedThisFrame)
-        {
-            if (stackingCoroutine != null)
-            {
-                StopCoroutine(stackingCoroutine);
-                stackingCoroutine = null;
-            }
-        }
-        
         // R 키를 누르면 맵을 초기화
         if (Keyboard.current.rKey.wasPressedThisFrame)
         {
             GenerateQuadTileMap();
         }
     }
-
-
-
     
     [Title("제어 버튼")]
     [Button("맵 생성")]
@@ -279,9 +271,7 @@ public class TileCreator : GenericSingleton<TileCreator>
 
         Camera.main.transform.position = new Vector3(cameraPos, mapSize.y, cameraPos);
 
-        cameraController.cameraHeight = (int)mapSize.y;
-        
-        cameraController.ChangeCameraHeight();
+        isMapCreated = true;
     }
     
     void ChangeTileColor(GameObject tile, Color color)
