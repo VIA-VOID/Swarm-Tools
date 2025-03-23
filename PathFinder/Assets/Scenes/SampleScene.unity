@@ -159,7 +159,7 @@ MonoBehaviour:
   cameraHeight: 15
   cameraAngle: 90
   lilac: {r: 0.7686275, g: 0.74509805, b: 0.8862746, a: 1}
-  orange: {r: 1, g: 0.85490197, b: 0.59607846, a: 0}
+  orange: {r: 1, g: 0.85490197, b: 0.59607846, a: 1}
   tileDatas: []
   startTileData: {fileID: 0}
   endTileData: {fileID: 0}

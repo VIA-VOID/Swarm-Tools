@@ -218,15 +218,32 @@ public class TileGenerator_Quad : MonoBehaviour
             if (tile == startTileData || tile == endTileData) continue;
 
             Color color = lilac;
-            StartCoroutine(AnimateTilePop(tile.gameObject));
-
-            if (calTilesSet.Contains(tile))
+            
+            if (!isBresenham)
             {
-                color = orange;
+                StartCoroutine(AnimateTilePop(tile.gameObject));
+                
+                if (calTilesSet.Contains(tile))
+                {
+                    color = orange;
+                }
+                
+                ChangeTileColor(tile.gameObject, color);
+                
+                yield return new WaitForSeconds(0.05f);
             }
-
-            ChangeTileColor(tile.gameObject, color);
-            yield return new WaitForSeconds(0.05f); // 타일을 하나씩 색 변경
+            else
+            {
+                ChangeTileColor(tile.gameObject, color);
+                
+                if (calTilesSet.Contains(tile))
+                {
+                    color = orange;
+                    ChangeTileColor(tile.gameObject, color);
+                }
+            }
+            
+             // 타일을 하나씩 색 변경
         }
 
         moveCoroutine = null;
