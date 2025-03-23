@@ -21,6 +21,9 @@ public class TileGenerator_Quad : MonoBehaviour
     [SerializeField] private GameObject tilePrefab;
     [LabelText("기본 타일")]
     [SerializeField] private GameObject baseTilePrefab;
+    [LabelText("디폴트 Material")]
+    [OnValueChanged("ChangeOriginMaterial")]
+    [SerializeField] private Material originMaterial;
     [LabelText("물 타일")]
     [SerializeField] private GameObject hexPrefabWater;
     [LabelText("타일 값 UI 프리팹")]
@@ -64,14 +67,17 @@ public class TileGenerator_Quad : MonoBehaviour
     private GameObject startTileObj;
     // 종료 타일 오브젝트
     private GameObject endTileObj;
+    // 길찾기 데이터 있는지 여부
+    private bool isPathDataInit;
     // 움직임 코루틴
     private Coroutine moveCoroutine = null;
-
+    
     private LineRenderer pathLine;
-    private LineRenderer pathLine2;
 
     private List<TileScript> path;
+    
     private List<TileScript> bresenhamPath;
+    
     private List<TileScript> allPath;
 
     private void Start()
@@ -80,6 +86,11 @@ public class TileGenerator_Quad : MonoBehaviour
         mainCamera = Camera.main;
     }
 
+    private void ChangeOriginMaterial()
+    {
+        originMaterial = baseTilePrefab.GetComponent<MeshRenderer>().material;
+    }
+    
     // ============================== DLL PATH-FIND START ==============================
     private void LoadPathFindDLL(List<TileScript> tileDatas)
     {
@@ -151,17 +162,13 @@ public class TileGenerator_Quad : MonoBehaviour
     [TitleGroup("제어 버튼")]
     [PropertyOrder(0)]
     [Button("맵 생성")]
-    public void GenerateTileMap()
+    private void GenerateTileMap()
     {
         GenerateQuadTileMap(Mathf.Max(mapSize, 1));
     }
-
-    [TitleGroup("길찾기 모드 선택")]
+    
     [PropertyOrder(1)]
-    [EnumToggleButtons]
-    [HideLabel]
-    [InlineButton("FindBestLoad", SdfIconType.CompassFill, "길찾기 실행")]
-    public PathFindType pathFindType;
+    [Button ("길찾기 알고리즘 실행")]
     private void FindBestLoad()
     {
         if (startTileData == null || endTileData == null)
@@ -169,46 +176,42 @@ public class TileGenerator_Quad : MonoBehaviour
             Debug.LogWarning("시작 지점과 도착지점을 모두 지정해야 합니다.");
             return;
         }
-
-        if (pathFindType == 0)
-        {
-            Debug.Log("타입을 하나는 선택해야 합니다.");
-            return;
-        }
-
-        SetTileData();
-
-        Debug.Log("길찾기 알고리즘 실행");
-
+        
         if (moveCoroutine != null)
         {
             return;
         }
+        
+        Debug.Log("길찾기 알고리즘 실행");
+        SetTileData();
+    }
 
-        // 알고리즘 실행
-        switch (pathFindType)
+    private void ViewLoadWithNumPad(bool isBresenham)
+    {
+        if (moveCoroutine != null)
         {
-            case PathFindType.AStar:
-                Debug.Log("AStar");
-                moveCoroutine = StartCoroutine(ChangeTilesSequentially(path));
-                break;
-            case PathFindType.AStarDirect:
-                Debug.Log("AStarDirect");
-                moveCoroutine = StartCoroutine(ChangeTilesSequentially(bresenhamPath));
-                break;
-            case PathFindType.All:
-                Debug.Log("All");
-                moveCoroutine = StartCoroutine(ChangeTilesSequentially(path));
-                break;
+            return;
         }
-
+        
+        moveCoroutine = StartCoroutine(ChangeTilesSequentially(isBresenham));
     }
 
     // 순차적으로 색 변경 (기본 색 설정)
-    private IEnumerator ChangeTilesSequentially(List<TileScript> calTiles)
+    private IEnumerator ChangeTilesSequentially(bool isBresenham)
     {
-        HashSet<TileScript> calTilesSet = new HashSet<TileScript>(calTiles);
+        foreach (var tileData in tileDatas)
+        {
+            if(tileData == startTileData || tileData == endTileData || !tileData.IsMovable()) continue;
+            ChangeTileColor(tileData.GameObject(), Color.white);
+        }
+        
+        List<TileScript> useList = isBresenham ? bresenhamPath : path;
+        
+        HashSet<TileScript> calTilesSet = new HashSet<TileScript>(useList);
 
+        if(pathLine != null)
+            pathLine.gameObject.SetActive(false);
+        
         foreach (var tile in allPath)
         {
             // 시작 타일과 종료 타일은 건너뛰기
@@ -228,13 +231,9 @@ public class TileGenerator_Quad : MonoBehaviour
 
         moveCoroutine = null;
 
-        DrawPathLine(path, Color.green);
-
-        if (pathFindType != PathFindType.AStar)
-        {
-            DrawPathLine2(bresenhamPath, Color.magenta);
-        }
-
+        Color usingColor = isBresenham ? Color.magenta : Color.green;
+        
+        DrawPathLine(useList, usingColor);
     }
 
     // 뿅뿅 애니메이션 (타일 크기 변화)
@@ -356,6 +355,16 @@ public class TileGenerator_Quad : MonoBehaviour
         {
             GenerateQuadTileMap(mapSize);
         }
+
+        if (Keyboard.current.numpad1Key.wasPressedThisFrame || Keyboard.current.digit1Key.wasPressedThisFrame)
+        {
+            ViewLoadWithNumPad(false);
+        }
+
+        if (Keyboard.current.numpad2Key.wasPressedThisFrame || Keyboard.current.digit2Key.wasPressedThisFrame)
+        {
+            ViewLoadWithNumPad(true);
+        }
     }
 
     void ChangeCameraHeight()
@@ -363,11 +372,6 @@ public class TileGenerator_Quad : MonoBehaviour
         Vector3 originPos = mainCamera.transform.position;
 
         mainCamera.transform.position = new Vector3(originPos.x, cameraHeight, originPos.z);
-    }
-
-    void ChangeCameraAngle()
-    {
-
     }
 
     void GenerateQuadTileMap(int size)
@@ -421,10 +425,6 @@ public class TileGenerator_Quad : MonoBehaviour
         {
             Destroy(pathLine.gameObject);
         }
-        if (pathLine2 != null)
-        {
-            Destroy(pathLine2.gameObject);
-        }
 
         ChangeCameraHeight();
     }
@@ -444,14 +444,22 @@ public class TileGenerator_Quad : MonoBehaviour
         Transform child = tile.transform.childCount > 0 ? tile.transform.GetChild(0) : null;
         if (child == null) return;
 
-        Renderer tileRenderer = child.GetComponent<Renderer>();
+        MeshRenderer tileRenderer = child.GetComponent<MeshRenderer>();
         if (tileRenderer == null) return;
 
-        // 기본 흰색 머티리얼을 생성한 후 색상을 적용
-        Material whiteMaterial = new Material(Shader.Find("Standard"));
-        whiteMaterial.color = Color.white; // 기본 흰색 설정
-        tileRenderer.material = whiteMaterial; // 흰색으로 초기화 후
-        tileRenderer.material.color = color; // 원하는 색상 적용
+        if (color == Color.white)
+        {
+            tileRenderer.material = originMaterial;
+            tileRenderer.material.color = Color.white; // 기본 흰색 설정
+        }
+        else
+        {
+            // 기본 흰색 머티리얼을 생성한 후 색상을 적용
+            Material whiteMaterial = new Material(Shader.Find("Standard"));
+            whiteMaterial.color = Color.white; // 기본 흰색 설정
+            tileRenderer.material = whiteMaterial; // 흰색으로 초기화 후
+            tileRenderer.material.color = color; // 원하는 색상 적용
+        }
     }
 
     // 경로선 그리기
@@ -479,32 +487,6 @@ public class TileGenerator_Quad : MonoBehaviour
             Vector3 pos = calTiles[i].transform.position;
             pos.y = 1f; // y값 1로 고정
             pathLine.SetPosition(i, pos);
-        }
-    }
-    private void DrawPathLine2(List<TileScript> calTiles, Color color)
-    {
-        if (pathLine2 != null)
-        {
-            Destroy(pathLine2.gameObject);
-        }
-
-        GameObject lineObj = new GameObject("pathLine2");
-        pathLine2 = lineObj.AddComponent<LineRenderer>();
-
-        pathLine2.material = new Material(Shader.Find("Sprites/Default"));
-        pathLine2.widthMultiplier = 0.1f;
-        pathLine2.positionCount = 0;
-        pathLine2.startColor = color;
-        pathLine2.endColor = color;
-        pathLine2.useWorldSpace = true;
-
-        pathLine2.positionCount = calTiles.Count;
-
-        for (int i = 0; i < calTiles.Count; i++)
-        {
-            Vector3 pos = calTiles[i].transform.position;
-            pos.y = 1f; // y값 1로 고정
-            pathLine2.SetPosition(i, pos);
         }
     }
 }
