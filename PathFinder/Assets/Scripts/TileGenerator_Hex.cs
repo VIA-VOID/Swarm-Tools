@@ -28,19 +28,19 @@ public class TileGenerator_Hex : MonoBehaviour
     [SerializeField] private Canvas mainCanvas;
     [LabelText("캐릭터 이동속도")]
     [SerializeField] private float moveSpeed = 2.0f;
-    
+
     [Title("맵 데이터 관련")]
     [LabelText("맵 데이터 리스트")]
-    [SerializeField]private List<TileScript> tileDatas;
+    [SerializeField] private List<TileScript> tileDatas;
     [LabelText("시작 지점 데이터")]
     [SerializeField, ReadOnly] private TileScript startTileData;
     [LabelText("종료 지점 데이터")]
     [SerializeField, ReadOnly] private TileScript endTileData;
-    
+
     [Title("현재 상태")]
     [EnumToggleButtons, HideLabel]
     public CreateStatus createStatus;
-    
+
     private float hexWidth = 1.732f;
     private float hexHeight = 1.5f;
     private float spacingFactor = 1.15f;
@@ -53,7 +53,7 @@ public class TileGenerator_Hex : MonoBehaviour
     private GameObject startTileObj;
     private GameObject endTileObj;
     private Coroutine moveCoroutine = null;
-    
+
     #region Public Functions
 
     [Title("제어 버튼")]
@@ -71,13 +71,13 @@ public class TileGenerator_Hex : MonoBehaviour
             Debug.LogWarning("시작 지점과 도착지점을 모두 지정해야 합니다.");
             return;
         }
-            
+
         Debug.Log("길찾기 알고리즘 실행");
 
         SpawnCharacterAtStart();
     }
-    
-        
+
+
     [Button("타일 값 표시")]
     public void ShowTileValues()
     {
@@ -115,7 +115,7 @@ public class TileGenerator_Hex : MonoBehaviour
     }
 
     #endregion
-    
+
     void SpawnCharacterAtStart()
     {
         if (spawnedCharacter != null)
@@ -142,9 +142,9 @@ public class TileGenerator_Hex : MonoBehaviour
                 if (characterAnimator != null)
                 {
                     // 이동 시작
-                    if(moveCoroutine != null)
+                    if (moveCoroutine != null)
                         StopCoroutine(moveCoroutine);
-                    
+
                     moveCoroutine = StartCoroutine(MoveCharacterToTarget(characterAnimator));
                 }
             }
@@ -153,16 +153,14 @@ public class TileGenerator_Hex : MonoBehaviour
 
     private IEnumerator MoveCharacterToTarget(Animator characterAnimator)
     {
-        bool isMoving = true;
-
         Vector3 targetPos = endTileObj.transform.position;
-        
+
         // 애니메이션을 Walking 상태로 변경
         if (characterAnimator != null)
         {
             characterAnimator.SetBool("walking", true);
         }
-        
+
         while (Vector3.Distance(spawnedCharacter.transform.position, targetPos) > 0.1f)
         {
             Vector3 moveDirection = (targetPos - spawnedCharacter.transform.position).normalized;
@@ -175,10 +173,8 @@ public class TileGenerator_Hex : MonoBehaviour
         {
             characterAnimator.SetBool("walking", false);
         }
-
-        isMoving = false;
     }
-    
+
     void Update()
     {
         if (Mouse.current.leftButton.isPressed)
@@ -189,7 +185,7 @@ public class TileGenerator_Hex : MonoBehaviour
             if (Physics.Raycast(ray, out hit))
             {
                 Vector3 pos = hit.collider.transform.position;
-                
+
                 if (hexTiles.ContainsKey(pos) && hexTiles[pos].CompareTag("HexTile"))
                 {
                     GameObject selectedTile = hexTiles[pos];
@@ -197,11 +193,11 @@ public class TileGenerator_Hex : MonoBehaviour
                     if (createStatus == CreateStatus.EraseToNormal)
                     {
                         TileScript getTileScript = selectedTile.gameObject.GetComponent<TileScript>();
-                        
+
                         getTileScript.SetTilePrefab(hexPrefab);
-                        
+
                         selectedTile.tag = "HexTile";
-                        
+
                         if (getTileScript != null)
                         {
                             getTileScript.SetMovable(true); // 이동 가능 블록으로 재변경
@@ -231,15 +227,15 @@ public class TileGenerator_Hex : MonoBehaviour
                         endTileObj = selectedTile;
                         ChangeTileColor(selectedTile, Color.red);
                     }
-                    
+
                     if (createStatus == CreateStatus.SetWater)
                     {
                         TileScript getTileScript = selectedTile.gameObject.GetComponent<TileScript>();
-                        
+
                         getTileScript.SetTilePrefab(hexPrefabWater);
 
                         selectedTile.tag = "WaterTile";
-                        
+
                         if (getTileScript != null)
                         {
                             getTileScript.SetMovable(false); // 물타일은 이동 불가
@@ -248,7 +244,7 @@ public class TileGenerator_Hex : MonoBehaviour
                 }
             }
         }
-        
+
         // R 키를 누르면 맵을 초기화
         if (Keyboard.current.rKey.wasPressedThisFrame)
         {
@@ -258,24 +254,24 @@ public class TileGenerator_Hex : MonoBehaviour
     void GenerateHexMap(int size)
     {
         currentMapSize = size;
-    
+
         hexTiles.Clear();
-    
+
         if (moveCoroutine != null)
         {
             StopCoroutine(moveCoroutine);
         }
-    
+
         if (spawnedCharacter != null)
         {
             Destroy(spawnedCharacter);
         }
-    
+
         foreach (Transform child in tileSpawnPoint)
         {
             Destroy(child.gameObject);
         }
-    
+
         HashSet<Vector2Int> hexCoords = new HashSet<Vector2Int>(); // 중복 방지
 
         for (int q = -size; q <= size; q++)
@@ -286,17 +282,17 @@ public class TileGenerator_Hex : MonoBehaviour
                 hexCoords.Add(new Vector2Int(q, r));
             }
         }
-    
+
         // 정렬: r(세로) 내림차순 -> q(가로) 내림차순 (좌측 상단이 0,0)
         List<Vector2Int> sortedHexCoords = hexCoords.ToList();
-        sortedHexCoords.Sort((a, b) => 
+        sortedHexCoords.Sort((a, b) =>
         {
             if (a.y != b.y) return b.y - a.y; // 아래에서 위로 정렬
-            return a.x - b.x; 
+            return a.x - b.x;
         });
-    
+
         Dictionary<Vector3, Vector2Int> worldToGridMap = new Dictionary<Vector3, Vector2Int>();
-    
+
         foreach (Vector2Int coord in sortedHexCoords)
         {
             Vector3 worldPos = HexToWorldPosition(coord.x, coord.y);
@@ -313,14 +309,14 @@ public class TileGenerator_Hex : MonoBehaviour
         startTileObj = null;
         endTileObj = null;
     }
-    
+
     [Button("타일 데이터화")]
     public void SetTileData()
     {
         tileDatas.Clear(); // 기존 데이터를 초기화
 
         List<KeyValuePair<Vector3, GameObject>> sortedTiles = hexTiles.ToList();
-        sortedTiles.Sort((a, b) => 
+        sortedTiles.Sort((a, b) =>
         {
             if (a.Key.z != b.Key.z) return b.Key.z.CompareTo(a.Key.z); // 위에서 아래로
             return a.Key.x.CompareTo(b.Key.x); // 왼쪽부터 오른쪽으로
@@ -330,39 +326,39 @@ public class TileGenerator_Hex : MonoBehaviour
         int col = 0;
         int rowSize = currentMapSize + 1;
         int maxRow = currentMapSize * 2;
-        
+
         foreach (var tileEntry in sortedTiles)
         {
             GameObject tile = tileEntry.Value;
             TileScript tileScript = tile.GetComponent<TileScript>();
-            
+
             if (tileScript != null)
             {
                 tileDatas.Add(tileScript);
                 tileScript.SetTilePoint(row, col);
                 col++;
-                
+
                 // 다음 줄로 이동할 조건
                 if (col >= rowSize)
                 {
                     row++;
                     col = 0;
-                    
+
                     if (row <= currentMapSize)
                         rowSize++;
                     else
                         rowSize--;
                 }
-                
+
                 if (tile.CompareTag("WaterTile"))
                 {
                     tileScript.SetMovable(false);
                 }
             }
         }
-        
+
         // TODO data to dll
-        
+
         Debug.Log("타일 데이터가 설정되었습니다. 타일 개수: " + tileDatas.Count);
     }
     Vector3 HexToWorldPosition(int q, int r)
@@ -376,15 +372,15 @@ public class TileGenerator_Hex : MonoBehaviour
     {
         Transform child = tile.transform.childCount > 0 ? tile.transform.GetChild(0) : null;
         if (child == null) return;
-    
+
         Renderer tileRenderer = child.GetComponent<Renderer>();
         if (tileRenderer == null) return;
-    
+
         Material newMaterial = new Material(tileRenderer.material);
         newMaterial.color = color;
         tileRenderer.material = newMaterial;
     }
-    
+
     void UpdateTileTextPositions()
     {
         foreach (var tileEntry in tileValueTexts)

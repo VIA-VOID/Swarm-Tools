@@ -11,7 +11,7 @@ class PathFinder
     public static extern void InitTileMap(int mapSize, Pos start, Pos end, IntPtr tiles, int tileSize);
 
     [DllImport(DLL_NAME)]
-    public static extern void RunPathFind(out IntPtr outPath, out int pathSize, out IntPtr outAllPath, out int allPathSize);
+    public static extern void RunPathFind(out IntPtr outPath, out int pathSize, out IntPtr outBresenhamPath, out int outBresenhamSize, out IntPtr outAllPath, out int allPathSize);
 
     [DllImport(DLL_NAME)]
     public static extern void FreePathArray(IntPtr path);
