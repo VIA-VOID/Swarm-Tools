@@ -78,8 +78,7 @@ public class TileCreator : GenericSingleton<TileCreator>
     private int calMapSize;
     
     #endregion
-
-    public List<TileScript> testList;
+    
     [TitleGroup("현재 상태")]
     [Button("타일 브러시 변경")]
     private void OpenTileBrushPrefabSelector()
