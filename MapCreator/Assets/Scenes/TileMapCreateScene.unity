@@ -205,7 +205,7 @@ GameObject:
   - component: {fileID: 267364828}
   - component: {fileID: 267364827}
   m_Layer: 0
-  m_Name: PresetController
+  m_Name: PresetManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -223,6 +223,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b7bd5455a3399b48a7a170b185f1536, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mainCanvas: {fileID: 921855512}
+  tileSelectWindow: {fileID: 512268341080943954, guid: 4ff8c853276e19d46b74c8b3f0bcf5be, type: 3}
   slotParent: {fileID: 877542220}
   presetSlotPrefab: {fileID: 1528719906254605548, guid: 1f63b21e6561cd0458dc6bfcb2be4e9f, type: 3}
 --- !u!4 &267364828
@@ -1369,7 +1371,7 @@ GameObject:
   - component: {fileID: 1235887458}
   - component: {fileID: 1235887457}
   m_Layer: 0
-  m_Name: TileCreator
+  m_Name: TileCreateManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1947,7 +1949,7 @@ GameObject:
   - component: {fileID: 2117994628}
   - component: {fileID: 2117994627}
   m_Layer: 0
-  m_Name: SettingPanelController
+  m_Name: CameraManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

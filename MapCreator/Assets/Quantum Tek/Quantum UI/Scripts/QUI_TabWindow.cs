@@ -13,6 +13,10 @@ namespace QuantumTek.QuantumUI
         [Tooltip("The tab used to open the window.")]
         public QUI_Tab tab;
 
+        public string resourcePath;
+        
+        public Transform listParent;
+
         public override void SetActive(bool value)
         {
             active = value;

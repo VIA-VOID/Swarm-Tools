@@ -22,6 +22,9 @@ namespace QuantumTek.QuantumUI
         [HideInInspector] public List<QUI_TabWindow> windows;
         [HideInInspector] public QUI_TabWindow currentWindow;
 
+        [SerializeField] private List<string> resourcePathList;
+        [SerializeField] private GameObject preViewPrefab;
+        
         [Header("Tab Group Variables")]
         [Tooltip("How the tabs should align.")]
         public QUI_TabAlign tabAlign;
@@ -128,6 +131,11 @@ namespace QuantumTek.QuantumUI
             }
         }
 
+        private void CreateResourceList()
+        {
+            
+        }
+        
         public void CloseTapGroup()
         {
             PresetController.Instance.ToggleSelectWindow();
