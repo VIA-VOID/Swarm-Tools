@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a11973c57522447e8a0a115112cf750c
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 162077
+  packageName: Quantum UI
+  packageVersion: 1.0
+  assetPath: Assets/Quantum Tek/Quantum UI/Prefabs/Elements/Switch Toggle With Label.prefab
+  uploadId: 351412

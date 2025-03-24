@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d3fec476f3c834ff2b7c2a25e1fcb726
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 162077
+  packageName: Quantum UI
+  packageVersion: 1.0
+  assetPath: Assets/Quantum Tek/Quantum UI/Animation/Tab Window/Tab Window.controller
+  uploadId: 351412

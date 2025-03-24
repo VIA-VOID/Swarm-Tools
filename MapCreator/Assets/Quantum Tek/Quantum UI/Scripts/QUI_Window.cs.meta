@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: a515eb926d3bf4b1c8ecae3c514887f7
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 162077
+  packageName: Quantum UI
+  packageVersion: 1.0
+  assetPath: Assets/Quantum Tek/Quantum UI/Scripts/QUI_Window.cs
+  uploadId: 351412

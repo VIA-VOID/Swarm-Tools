@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b70a0d4e683c84847974b6ddea172fea
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 162077
+  packageName: Quantum UI
+  packageVersion: 1.0
+  assetPath: Assets/Quantum Tek/Quantum UI/Prefabs/Elements/Input Field.prefab
+  uploadId: 351412

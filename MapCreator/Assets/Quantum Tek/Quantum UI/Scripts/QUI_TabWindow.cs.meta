@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 86e24e99b0fdb4fdabb4dc825bf6f94b
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 162077
+  packageName: Quantum UI
+  packageVersion: 1.0
+  assetPath: Assets/Quantum Tek/Quantum UI/Scripts/QUI_TabWindow.cs
+  uploadId: 351412

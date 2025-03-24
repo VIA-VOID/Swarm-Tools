@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 59004e2d9368943e4bd1b117b7a18ee2
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 162077
+  packageName: Quantum UI
+  packageVersion: 1.0
+  assetPath: Assets/Quantum Tek/Quantum UI/Prefabs/Elements/Window.prefab
+  uploadId: 351412

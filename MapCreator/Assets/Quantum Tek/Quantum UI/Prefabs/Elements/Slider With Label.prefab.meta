@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b573c9c130ea34495bfe74f5e6c55792
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 162077
+  packageName: Quantum UI
+  packageVersion: 1.0
+  assetPath: Assets/Quantum Tek/Quantum UI/Prefabs/Elements/Slider With Label.prefab
+  uploadId: 351412

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 10d329ec520b5441cab19f9d8742996b
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 162077
+  packageName: Quantum UI
+  packageVersion: 1.0
+  assetPath: Assets/Quantum Tek/Quantum UI/Prefabs/Windows/Login Window.prefab
+  uploadId: 351412

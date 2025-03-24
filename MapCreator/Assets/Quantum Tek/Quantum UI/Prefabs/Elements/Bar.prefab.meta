@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: ec019941f90ec41e5ad2df28607525e8
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 162077
+  packageName: Quantum UI
+  packageVersion: 1.0
+  assetPath: Assets/Quantum Tek/Quantum UI/Prefabs/Elements/Bar.prefab
+  uploadId: 351412

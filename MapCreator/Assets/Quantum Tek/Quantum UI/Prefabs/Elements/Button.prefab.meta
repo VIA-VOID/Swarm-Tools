@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 8de8f6c5f34274e569ac1bd4d57c3c70
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 162077
+  packageName: Quantum UI
+  packageVersion: 1.0
+  assetPath: Assets/Quantum Tek/Quantum UI/Prefabs/Elements/Button.prefab
+  uploadId: 351412

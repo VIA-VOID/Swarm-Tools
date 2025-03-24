@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: cc47b5e80b09f4e7a91bb90909a1f535
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 162077
+  packageName: Quantum UI
+  packageVersion: 1.0
+  assetPath: Assets/Quantum Tek/Quantum UI/Prefabs/Elements/Slider.prefab
+  uploadId: 351412

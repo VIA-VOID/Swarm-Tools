@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: e7c951cf44bd148339614d5722fc18cc
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 162077
+  packageName: Quantum UI
+  packageVersion: 1.0
+  assetPath: Assets/Quantum Tek/Quantum UI/Scripts/QUI_ElementAudioClip.cs
+  uploadId: 351412

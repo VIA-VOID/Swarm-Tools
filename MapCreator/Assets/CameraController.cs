@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public class CameraController : MonoBehaviour
+public class CameraController : GenericSingleton<CameraController>
 {
     [Title("카메라 컨트롤")]
     [LabelText("카메라 거리")]
