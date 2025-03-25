@@ -21,8 +21,7 @@ namespace QuantumTek.QuantumUI
     {
         [HideInInspector] public List<QUI_TabWindow> windows;
         [HideInInspector] public QUI_TabWindow currentWindow;
-
-        [SerializeField] private List<string> resourcePathList;
+        
         [SerializeField] private GameObject preViewPrefab;
         
         [Header("Tab Group Variables")]
@@ -55,6 +54,7 @@ namespace QuantumTek.QuantumUI
             if (!aligned)
             {
                 AlignTabs(tabAlign);
+                CreateResourceList(preViewPrefab);
                 aligned = true;
             }
 
@@ -131,9 +131,30 @@ namespace QuantumTek.QuantumUI
             }
         }
 
-        private void CreateResourceList()
+        private void CreateResourceList(GameObject prefab)
         {
-            
+            foreach (var tabWindow in windows)
+            {
+                List<GameObject> sourceList = null;
+
+                switch (tabWindow.prefabType)
+                {
+                    case PrefabType.TilePrefab:
+                        sourceList = PresetController.Instance.tilePrefabs;
+                        break;
+                    case PrefabType.NeutralPrefab:
+                        sourceList = PresetController.Instance.neutralPrefabs;
+                        break;
+                    case PrefabType.ObjectPrefab:
+                        sourceList = PresetController.Instance.objectPrefabs;
+                        break;
+                }
+
+                if (sourceList != null)
+                {
+                    tabWindow.LoadResourcesWithList(sourceList, prefab);
+                }
+            }
         }
         
         public void CloseTapGroup()

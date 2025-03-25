@@ -29,8 +29,17 @@ public enum PrefabType
 {
     [LabelText("타일 프리팹")]
     TilePrefab,
+    [LabelText("자연 프리팹")]
+    NeutralPrefab,
     [LabelText("오브젝트 프리팹")]
     ObjectPrefab
+}
+
+public enum ResourceCategory
+{
+    Tile,
+    NeutralObject,
+    PropObject
 }
 
 public enum Direction8

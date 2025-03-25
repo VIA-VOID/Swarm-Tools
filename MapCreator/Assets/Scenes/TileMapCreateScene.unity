@@ -227,6 +227,12 @@ MonoBehaviour:
   tileSelectWindow: {fileID: 512268341080943954, guid: 4ff8c853276e19d46b74c8b3f0bcf5be, type: 3}
   slotParent: {fileID: 877542220}
   presetSlotPrefab: {fileID: 1528719906254605548, guid: 1f63b21e6561cd0458dc6bfcb2be4e9f, type: 3}
+  tilePrefabPath: Assets/Resources/Prefabs/TilePrefabs
+  neutralPrefabPath: Assets/Resources/Prefabs/ObjectPrefabs/Neutral
+  objectPrefabPath: Assets/Resources/Prefabs/ObjectPrefabs/Props
+  tilePrefabs: []
+  neutralPrefabs: []
+  objectPrefabs: []
 --- !u!4 &267364828
 Transform:
   m_ObjectHideFlags: 0
