@@ -28,7 +28,8 @@ public class TileScript : MonoBehaviour
     [SerializeField, ReadOnly] private GameObject tileObj;
     [SerializeField, ReadOnly] private GameObject objectObj;
     [SerializeField, ReadOnly] private List<GameObject> stackObjList;
-    [SerializeField, ReadOnly] private bool isStackAble;
+    
+    private bool isStackAble;
 
     public void SetTilePoint(int x, int y)
     {
