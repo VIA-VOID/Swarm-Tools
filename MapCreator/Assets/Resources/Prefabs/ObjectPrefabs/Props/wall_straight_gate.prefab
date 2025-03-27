@@ -101,7 +101,7 @@ GameObject:
   - component: {fileID: -2049713650251061556}
   m_Layer: 0
   m_Name: wall_straight_gate
-  m_TagString: Untagged
+  m_TagString: Object
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

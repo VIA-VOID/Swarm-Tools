@@ -96,6 +96,16 @@ public class TileCreator : GenericSingleton<TileCreator>
 
     private int calMapSize;
     
+    private float qLastTapTime = -1f;
+    private float eLastTapTime = -1f;
+
+    private float qHoldTime = 0f;
+    private float eHoldTime = 0f;
+
+    private const float doubleTapThreshold = 0.3f;
+    private const float holdThreshold = 0.25f;
+    private const float slowRotateSpeed = 90f;
+    
     #endregion
     
     [TitleGroup("현재 상태")]
@@ -110,6 +120,8 @@ public class TileCreator : GenericSingleton<TileCreator>
     
     [LabelText("오브젝트 브러시"), InlineEditor]
     [SerializeField, ReadOnly] private GameObject selectedObjectPrefab;
+
+    [SerializeField] private float yValue;
     
     [Button("설치 오브젝트 변경")]
     private void OpenObjectPrefabSelector()
@@ -274,7 +286,20 @@ public class TileCreator : GenericSingleton<TileCreator>
                         SetPreviewMode(previewInstance);
                     }
 
-                    previewInstance.transform.position = SnapToTileCenter(targetPos) + Vector3.up * 1f;
+                    BoxCollider col = previewInstance.GetComponentInChildren<BoxCollider>();
+                    Vector3 offset = Vector3.zero;
+
+                    if (col != null)
+                    {
+                        Vector3 center = col.center;
+                        Vector3 size = col.size;
+
+                        float yOffset = 0.5f + ((size.y * 0.5f) - center.y);
+                        offset = new Vector3(-center.x, yOffset, -center.z);
+                    }
+
+                    Vector3 snapped = SnapToTileCenter(targetPos);
+                    previewInstance.transform.position = snapped + offset;
                 }
                 
                 if (previewInstance != null)
@@ -291,6 +316,72 @@ public class TileCreator : GenericSingleton<TileCreator>
                 previewInstance = null;
                 lastPreviewTile = null;
             }
+        }
+    }
+    
+    if (previewInstance != null)
+    {
+        // Q 회전 처리
+        if (Keyboard.current.qKey.wasPressedThisFrame)
+        {
+            float currentTime = Time.time;
+            if (currentTime - qLastTapTime <= doubleTapThreshold)
+            {
+                // 더블탭 감지
+                previewInstance.transform.Rotate(Vector3.up, -90f);
+                qLastTapTime = -1f; // 초기화
+            }
+            else
+            {
+                qLastTapTime = currentTime;
+            }
+
+            qHoldTime = 0f; // 길게 누르기 타이머 리셋
+        }
+
+        if (Keyboard.current.qKey.isPressed)
+        {
+            qHoldTime += Time.deltaTime;
+            if (qHoldTime > holdThreshold)
+            {
+                previewInstance.transform.Rotate(Vector3.up, -slowRotateSpeed * Time.deltaTime);
+            }
+        }
+
+        if (Keyboard.current.qKey.wasReleasedThisFrame)
+        {
+            qHoldTime = 0f;
+        }
+
+        // E 회전 처리
+        if (Keyboard.current.eKey.wasPressedThisFrame)
+        {
+            float currentTime = Time.time;
+            if (currentTime - eLastTapTime <= doubleTapThreshold)
+            {
+                previewInstance.transform.Rotate(Vector3.up, 90f);
+                eLastTapTime = -1f;
+            }
+            else
+            {
+                eLastTapTime = currentTime;
+            }
+
+            eHoldTime = 0f;
+        }
+
+        if (Keyboard.current.eKey.isPressed)
+        {
+            eHoldTime += Time.deltaTime;
+            if (eHoldTime > holdThreshold)
+            {
+                previewInstance.transform.Rotate(Vector3.up, slowRotateSpeed * Time.deltaTime);
+            }
+        }
+
+        if (Keyboard.current.eKey.wasReleasedThisFrame)
+        {
+            eHoldTime = 0f;
         }
     }
 }
@@ -477,9 +568,9 @@ public class TileCreator : GenericSingleton<TileCreator>
 
     void PlaceObject(GameObject prefab, Vector3 position)
     {
-        Vector3 snapPos = SnapToTileCenter(position);
-    
-        GameObject obj = Instantiate(prefab, snapPos, Quaternion.identity);
+        Quaternion rotation = previewInstance != null ? previewInstance.transform.rotation : Quaternion.identity;
+
+        GameObject obj = Instantiate(prefab, position, rotation);
 
         Collider col = obj.GetComponent<Collider>();
         if (col == null)
@@ -505,7 +596,25 @@ public class TileCreator : GenericSingleton<TileCreator>
 
         List<TileScript> coveredTiles = GetCoveredTilesByCollider(previewInstance);
         bool placeable = IsPlaceable(coveredTiles);
+        
+        BoxCollider col = previewInstance.GetComponentInChildren<BoxCollider>();
+        if (col != null)
+        {
+            col.isTrigger = true;
+            
+            Vector3 center = col.bounds.center;
+            Vector3 halfExtents = col.bounds.extents;
 
+            Collider[] hits = Physics.OverlapBox(center, halfExtents, previewInstance.transform.rotation, ~0, QueryTriggerInteraction.Collide);
+            foreach (var hit in hits)
+            {
+                if (hit.gameObject != previewInstance && hit.CompareTag("Object"))
+                {
+                    placeable = false;
+                }
+            }
+        }
+        
         SetPreviewColor(previewInstance, placeable);
 
         if (Mouse.current.leftButton.wasPressedThisFrame && placeable)
@@ -514,9 +623,10 @@ public class TileCreator : GenericSingleton<TileCreator>
         }
     }
     
+    // 높이 변경 없음
     Vector3 SnapToTileCenter(Vector3 pos)
     {
-        return new Vector3(Mathf.Round(pos.x), 0f, Mathf.Round(pos.z));
+        return new Vector3(Mathf.Round(pos.x), pos.y, Mathf.Round(pos.z));
     }
     
     void SetPreviewColor(GameObject obj, bool placeable)

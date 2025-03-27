@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: -3160161696350711321}
   m_Layer: 0
   m_Name: fence_wood_straight
-  m_TagString: Untagged
+  m_TagString: Object
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

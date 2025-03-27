@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 640642343463408581}
   m_Layer: 0
   m_Name: fence_stone_straight_gate
-  m_TagString: Untagged
+  m_TagString: Object
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
