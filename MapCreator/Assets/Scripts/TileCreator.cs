@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Sirenix.OdinInspector;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
@@ -98,12 +99,24 @@ public class TileCreator : GenericSingleton<TileCreator>
     private const float holdThreshold = 0.25f;
     private const float slowRotateSpeed = 90f;
     
-    private bool IsTileChange() => editStatusEnum == EditStatus.ChangeTile;
+    private bool IsTileChange()
+    {
+        DestroyPreviewInstance();
+        
+        return editStatusEnum == EditStatus.ChangeTile;
+    }
+
     private bool IsObjectSet() => editStatusEnum == EditStatus.SetObject;
-    private bool IsStackTile() => editStatusEnum == EditStatus.StackTile;
-    
+    private bool IsStackTile()
+    {
+        DestroyPreviewInstance();
+        return editStatusEnum == EditStatus.StackTile;
+    }
+
     private bool isEditorInit;
-    
+
+    private List<GameObject> highlightedTiles = new List<GameObject>();
+
     #endregion
     void Start()
     {
@@ -509,37 +522,101 @@ public class TileCreator : GenericSingleton<TileCreator>
         }
     }
     
-    void UpdatePreview()
+void UpdatePreview()
+{
+    if (previewInstance == null) return;
+
+    List<TileScript> coveredTiles = GetCoveredTilesByCollider(previewInstance);
+    bool placeable = IsPlaceable(coveredTiles);
+
+    // 기존 하이라이트 타일 원복
+    foreach (var tile in highlightedTiles)
     {
-        if (previewInstance == null) return;
+        ChangeTileColor(tile, Color.white);
+    }
+    highlightedTiles.Clear();
 
-        List<TileScript> coveredTiles = GetCoveredTilesByCollider(previewInstance);
-        bool placeable = IsPlaceable(coveredTiles);
-        
-        BoxCollider col = previewInstance.GetComponentInChildren<BoxCollider>();
-        if (col != null)
+    // 프리뷰 충돌 감지
+    BoxCollider col = previewInstance.GetComponentInChildren<BoxCollider>();
+    if (col != null)
+    {
+        col.isTrigger = true;
+
+        Vector3 center = col.bounds.center;
+        Vector3 halfExtents = col.bounds.extents;
+
+        Collider[] hits = Physics.OverlapBox(center, halfExtents, previewInstance.transform.rotation, ~0, QueryTriggerInteraction.Collide);
+        foreach (var hit in hits)
         {
-            col.isTrigger = true;
-            
-            Vector3 center = col.bounds.center;
-            Vector3 halfExtents = col.bounds.extents;
-
-            Collider[] hits = Physics.OverlapBox(center, halfExtents, previewInstance.transform.rotation, ~0, QueryTriggerInteraction.Collide);
-            foreach (var hit in hits)
+            if (hit.gameObject != previewInstance && hit.CompareTag("Object"))
             {
-                if (hit.gameObject != previewInstance && hit.CompareTag("Object"))
+                placeable = false;
+            }
+
+            if (hit.gameObject != previewInstance && hit.CompareTag("QuadTile"))
+            {
+                GameObject tileChild = hit.gameObject;
+                Transform parent = tileChild.transform.parent;
+
+                bool isMovable = true;
+
+                if (parent != null)
                 {
-                    placeable = false;
+                    TileScript tileScript = parent.GetComponent<TileScript>();
+                    if (tileScript != null)
+                    {
+                        isMovable = tileScript.GetIsMovable();
+                    }
                 }
+
+                if (isMovable)
+                {
+                    ChangeTileColor(tileChild, Color.green);
+                }
+                else
+                {
+                    ChangeTileColor(tileChild, Color.red);
+                    placeable = false; // 이동 불가 타일이 하나라도 있다면 설치 불가
+                }
+
+                highlightedTiles.Add(tileChild);
             }
         }
-        
-        SetPreviewColor(previewInstance, placeable);
+    }
 
-        if (Mouse.current.leftButton.wasPressedThisFrame && placeable)
+    SetPreviewColor(previewInstance, placeable);
+
+    if (Mouse.current.leftButton.wasPressedThisFrame && placeable)
+    {
+        PlaceObject(selectedObjectPrefab, previewInstance.transform.position);
+
+        foreach (GameObject tileChild in highlightedTiles)
         {
-            PlaceObject(selectedObjectPrefab, previewInstance.transform.position);
+            Transform parent = tileChild.transform.parent;
+            if (parent != null)
+            {
+                TileScript tileScript = parent.GetComponent<TileScript>();
+                if (tileScript != null)
+                {
+                    tileScript.SetMovable(false);
+                }
+            }
+
+            ChangeTileColor(tileChild, Color.white);
         }
+
+        highlightedTiles.Clear();
+    }
+}
+    
+    void ChangeTileColor(GameObject tile, Color color)
+    {
+        Transform child = tile.transform.childCount > 0 ? tile.transform.GetChild(0) : tile.transform;
+    
+        MeshRenderer renderer = child.GetComponent<MeshRenderer>();
+        if (renderer == null) return;
+
+        renderer.material.color = color;
     }
     
     // 높이 변경 없음
@@ -552,8 +629,8 @@ public class TileCreator : GenericSingleton<TileCreator>
     {
         Color targetColor = placeable ? new Color(0f, 1f, 0f, 0.4f) : new Color(1f, 0f, 0f, 0.4f);
 
-        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
-        foreach (Renderer renderer in renderers)
+        MeshRenderer[] renderers = obj.GetComponentsInChildren<MeshRenderer>();
+        foreach (MeshRenderer renderer in renderers)
         {
             Material mat = renderer.material;
             mat.shader = Shader.Find("Transparent/Diffuse");
@@ -569,6 +646,17 @@ public class TileCreator : GenericSingleton<TileCreator>
             previewInstance = null;
             lastPreviewTile = null;
         }
+        
+        ClearTileHighlights();
+    }
+    
+    private void ClearTileHighlights()
+    {
+        foreach (GameObject tile in highlightedTiles)
+        {
+            ChangeTileColor(tile, Color.white);
+        }
+        highlightedTiles.Clear();
     }
     
     #region 인스펙터용 코드
