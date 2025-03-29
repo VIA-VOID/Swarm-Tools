@@ -1,9 +1,14 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
+using UnityEngine.Serialization;
+using UnityEngine.UI;
+using UnityEngine.WSA;
 
 public class TileCreator : GenericSingleton<TileCreator>
 {
@@ -14,7 +19,7 @@ public class TileCreator : GenericSingleton<TileCreator>
     [SerializeField] private Vector2 mapSize; // 맵 크기
     
     [TitleGroup("프리팹")]
-    [LabelText("베이스 타일 프리팹")]
+    [LabelText("타일 프리팹")]
     [SerializeField] private GameObject tilePrefab;
     
     [TitleGroup("프리팹")]
@@ -26,33 +31,25 @@ public class TileCreator : GenericSingleton<TileCreator>
     [EnumToggleButtons, HideLabel]
     [OnValueChanged("ChangeBrushCheck")]
     public EditStatus editStatusEnum;
-    void ChangeBrushCheck()
-    {
-        // 오브젝트 설치인 경우 브러시 사이즈 1로 고정
-        if (editStatusEnum == EditStatus.SetObject)
-        {
-            brushSize = 1;
-        }
-    }
-    
+
     [LabelText("타일 브러시")]
     [SerializeField]
     [ShowIf("@IsTileChange() || IsStackTile()")]
     [InlineButton("OpenTileBrushPrefabSelector", SdfIconType.Brush, "브러시 변경")]
     private GameObject selectedTilePrefab;
-    
+
     [LabelText("브러시 사이즈")]
     [SerializeField]
     [ShowIf(nameof(IsTileChange))]
     private int brushSize;
-
+    
     [LabelText("오브젝트 브러시"), InlineEditor]
     [SerializeField]
     [ShowIf(nameof(IsObjectSet))]
     [InlineButton("OpenObjectPrefabSelector", SdfIconType.Brush, "브러시 변경")]
     private GameObject selectedObjectPrefab;
     
-    [Title("맵 데이터")]
+    [Title("맵 데이터 관련")]
     [LabelText("맵 데이터 리스트")]
     [SerializeField]private List<TileScript> tileDatas;
     
@@ -79,13 +76,13 @@ public class TileCreator : GenericSingleton<TileCreator>
     private GameObject previewInstance;
     private GameObject lastPreviewTile;
 
+    private Transform createPos;
+
     private Coroutine stackingCoroutine = null;
     
     private float stackDelay = 0.3f;
     
     private float lastStackTime = 0f;
-
-    private Transform createPos;
     
     private bool isMapCreated = false;
 
@@ -101,35 +98,18 @@ public class TileCreator : GenericSingleton<TileCreator>
     private const float holdThreshold = 0.25f;
     private const float slowRotateSpeed = 90f;
     
-    private List<GameObject> lastHighlightedTiles = new List<GameObject>();
-    private Color previewTileColor = Color.red;
-    private Color defaultTileColor = Color.white;
-    
     private bool IsTileChange() => editStatusEnum == EditStatus.ChangeTile;
     private bool IsObjectSet() => editStatusEnum == EditStatus.SetObject;
     private bool IsStackTile() => editStatusEnum == EditStatus.StackTile;
-
+    
     private bool isEditorInit;
     
     #endregion
-
     void Start()
     {
         LoadTilePrefabs();
     }
-    
-    void Update()
-    {
-        HandleTileEdit();
-        UpdatePreviewInstance();
-        HandlePreviewRotation();
-        HandleKeyboardShortcuts();
-        
-        if (editStatusEnum != EditStatus.SetObject)
-        {
-            DestroyPreviewInstance();
-        }
-    }
+
     #region Public Functions
 
     public int GetMapSize()
@@ -143,192 +123,228 @@ public class TileCreator : GenericSingleton<TileCreator>
     }
     
     #endregion
-
-    void HandleTileEdit()
+    void Update()
     {
-        if (!Mouse.current.leftButton.isPressed) return;
-    
-        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-        if (!Physics.Raycast(ray, out RaycastHit hit)) return;
-    
-        Vector3 centerPos = hit.collider.transform.position;
-        int range = brushSize;
-    
-        for (int x = -range + 1; x < range; x++)
+        if (Mouse.current.leftButton.isPressed)
         {
-            for (int z = -range + 1; z < range; z++)
+            RaycastHit hit;
+            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+    
+            if (Physics.Raycast(ray, out hit))
             {
-                Vector3 offsetPos = centerPos + new Vector3(x, 0, z);
+                Vector3 centerPos = hit.collider.transform.position;
+                int range = brushSize;
     
-                if (!quadTiles.TryGetValue(offsetPos, out GameObject selectedTile) || !selectedTile.CompareTag("QuadTile"))
-                    continue;
-    
-                TileScript tile = selectedTile.GetComponent<TileScript>();
-                if (tile == null) continue;
-    
-                switch (editStatusEnum)
+                for (int x = -range + 1; x < range; x++)
                 {
-                    case EditStatus.EraseToNormal:
-                        tile.SetTilePrefab(baseTilePrefab);
-                        tile.SetMovable(true);
-                        selectedTile.tag = "QuadTile";
-                        break;
+                    for (int z = -range + 1; z < range; z++)
+                    {
+                        Vector3 offsetPos = centerPos + new Vector3(x, 0, z);
     
-                    case EditStatus.ChangeTile:
-                        if (selectedTilePrefab == null)
+                        if (!quadTiles.ContainsKey(offsetPos)) continue;
+    
+                        GameObject selectedTile = quadTiles[offsetPos];
+                        if (!selectedTile.CompareTag("QuadTile")) continue;
+    
+                        TileScript getTileScript = selectedTile.GetComponent<TileScript>();
+                        if (getTileScript == null) continue;
+    
+                        switch (editStatusEnum)
                         {
-                            Debug.Log("변경할 타일 미선택");
-                            return;
+                            case EditStatus.EraseToNormal:
+                                getTileScript.SetTilePrefab(baseTilePrefab);
+                                getTileScript.SetMovable(true);
+                                selectedTile.tag = "QuadTile";
+                                break;
+    
+                            case EditStatus.ChangeTile:
+                                if (selectedTilePrefab == null)
+                                {
+                                    Debug.Log("변경할 타일 미선택");
+                                    return;
+                                }
+                                getTileScript.SetTilePrefab(selectedTilePrefab);
+                                getTileScript.SetMovable(false);
+                                break;
+    
+                            case EditStatus.StackTile:
+                                if (Time.time - lastStackTime < stackDelay) return;
+    
+                                getTileScript.SetMovable(false);
+    
+                                List<GameObject> stackObjList = getTileScript.GetStackList();
+                                if (stackObjList == null)
+                                    stackObjList = new List<GameObject>();
+    
+                                if (stackObjList.Count < 5)
+                                {
+                                    Vector3 stackPos = selectedTile.transform.position + Vector3.up * (1f + stackObjList.Count);
+                                    GameObject stackedObj = Instantiate(selectedTilePrefab, stackPos, Quaternion.identity, selectedTile.transform);
+                                    stackedObj.layer = LayerMask.NameToLayer("Ignore Raycast");
+                                    stackObjList.Add(stackedObj);
+                                    lastStackTime = Time.time;
+                                }
+                                break;
+    
+                            case EditStatus.SetObject:
+                                if (selectedObjectPrefab == null)
+                                {
+                                    Debug.Log("설치할 오브젝트가 없습니다.");
+                                    return;
+                                }
+    
+                                if (getTileScript.GetIsStackAble())
+                                {
+                                    List<GameObject> stackList = getTileScript.GetStackList();
+                                    if (stackList == null)
+                                        stackList = new List<GameObject>();
+    
+                                    Vector3 basePos;
+    
+                                    if (stackList.Count > 0)
+                                    {
+                                        // 가장 마지막 스택된 오브젝트 위에 설치
+                                        GameObject topObj = stackList[stackList.Count - 1];
+                                        basePos = topObj.transform.position + Vector3.up * 1f;
+                                    }
+                                    else
+                                    {
+                                        // 기존 objectObj 위에 설치
+                                        Transform baseTransform = getTileScript.transform;
+                                        GameObject baseObject = baseTransform.childCount > 0 ? baseTransform.GetChild(0).gameObject : null;
+                                    }
+                                    
+                                    getTileScript.SetTileStackAble(false); // 한 번만 스택 가능
+                                }
+                                break;
                         }
-                        tile.SetTilePrefab(selectedTilePrefab);
-                        tile.SetMovable(false);
-                        break;
-    
-                    case EditStatus.StackTile:
-                        if (Time.time - lastStackTime < stackDelay) return;
-    
-                        tile.SetMovable(false);
-                        var stackList = tile.GetStackList() ?? new List<GameObject>();
-    
-                        if (stackList.Count < 5)
-                        {
-                            Vector3 stackPos = selectedTile.transform.position + Vector3.up * (1f + stackList.Count);
-                            var stackedObj = Instantiate(selectedTilePrefab, stackPos, Quaternion.identity, selectedTile.transform);
-                            stackedObj.layer = LayerMask.NameToLayer("Ignore Raycast");
-                            stackList.Add(stackedObj);
-                            lastStackTime = Time.time;
-                        }
-                        break;
-    
-                    case EditStatus.SetObject:
-                        if (selectedObjectPrefab == null)
-                        {
-                            Debug.Log("설치할 오브젝트가 없습니다.");
-                            return;
-                        }
-    
-                        if (tile.GetIsStackAble())
-                        {
-                            var stackObjs = tile.GetStackList() ?? new List<GameObject>();
-                            Vector3 basePos;
-    
-                            if (stackObjs.Count > 0)
-                            {
-                                basePos = stackObjs[^1].transform.position + Vector3.up * 1f;
-                            }
-                            else
-                            {
-                                var baseObj = tile.transform.childCount > 0 ? tile.transform.GetChild(0).gameObject : null;
-                                basePos = baseObj != null
-                                    ? baseObj.transform.position + Vector3.up * 1f
-                                    : tile.transform.position + Vector3.up * 1f;
-                            }
-    
-                            var stackedObj = Instantiate(selectedObjectPrefab, basePos, Quaternion.identity, selectedTile.transform);
-                            stackedObj.layer = LayerMask.NameToLayer("Ignore Raycast");
-                            stackObjs.Add(stackedObj);
-                            tile.SetTileStackAble(false);
-                        }
-                        break;
+                    }
                 }
             }
         }
-    }
-    
-    void UpdatePreviewInstance()
-    {
-        if (editStatusEnum != EditStatus.SetObject || selectedObjectPrefab == null) return;
 
-        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-        if (!Physics.Raycast(ray, out RaycastHit hit))
-        {
-            DestroyPreviewInstance();
-            return;
-        }
-
-        Vector3 targetPos = hit.collider.transform.position;
-
-        if (!quadTiles.ContainsKey(targetPos)) return;
-
-        GameObject tile = quadTiles[targetPos];
-        if (tile == lastPreviewTile) return;
-
-        lastPreviewTile = tile;
-
-        if (previewInstance == null)
-        {
-            previewInstance = Instantiate(selectedObjectPrefab);
-            SetPreviewMode(previewInstance);
-        }
-
-        BoxCollider col = previewInstance.GetComponentInChildren<BoxCollider>();
-        Vector3 offset = Vector3.zero;
-
-        if (col != null)
-        {
-            Vector3 center = col.center;
-            Vector3 size = col.size;
-            float yOffset = 0.5f + ((size.y * 0.5f) - center.y);
-            offset = new Vector3(-center.x, yOffset, -center.z);
-        }
-
-        previewInstance.transform.position = SnapToTileCenter(targetPos) + offset;
-
-        UpdatePreview();
-    }
-    
-    // 조작 프리뷰 로테이션
-    void HandlePreviewRotation()
-    {
-        if (previewInstance == null) return;
-
-        HandleRotationKey(Keyboard.current.qKey, ref qLastTapTime, ref qHoldTime, -90f, -slowRotateSpeed);
-        HandleRotationKey(Keyboard.current.eKey, ref eLastTapTime, ref eHoldTime, 90f, slowRotateSpeed);
-    }
-
-    // 조작 => 키보드 q, r키로 프리뷰 각도 수정
-    void HandleRotationKey(KeyControl key, ref float lastTapTime, ref float holdTime, float fastAngle, float slowSpeed)
-    {
-        if (key.wasPressedThisFrame)
-        {
-            float currentTime = Time.time;
-            if (currentTime - lastTapTime <= doubleTapThreshold)
-            {
-                previewInstance.transform.Rotate(Vector3.up, fastAngle);
-                lastTapTime = -1f;
-            }
-            else
-            {
-                lastTapTime = currentTime;
-            }
-            holdTime = 0f;
-        }
-
-        if (key.isPressed)
-        {
-            holdTime += Time.deltaTime;
-            if (holdTime > holdThreshold)
-            {
-                previewInstance.transform.Rotate(Vector3.up, slowSpeed * Time.deltaTime);
-            }
-        }
-
-        if (key.wasReleasedThisFrame)
-        {
-            holdTime = 0f;
-        }
-    }
-    
-    // 조작 => 키보드 키
-    void HandleKeyboardShortcuts()
-    {
+        // R 키로 맵 초기화
         if (Keyboard.current.rKey.wasPressedThisFrame)
         {
             GenerateQuadTileMap();
         }
-    }
     
-    // 맵 생성
+        if (editStatusEnum == EditStatus.SetObject && selectedObjectPrefab != null)
+        {
+            // 마우스 위치에 따라 프리뷰 갱신
+            Ray previewRay = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+            if (Physics.Raycast(previewRay, out RaycastHit previewHit))
+            {
+                Vector3 targetPos = previewHit.collider.transform.position;
+    
+                if (quadTiles.ContainsKey(targetPos))
+                {
+                    GameObject tile = quadTiles[targetPos];
+                    if (tile != lastPreviewTile)
+                    {
+                        lastPreviewTile = tile;
+    
+                        if (previewInstance == null)
+                        {
+                            previewInstance = Instantiate(selectedObjectPrefab);
+                            SetPreviewMode(previewInstance);
+                        }
+    
+                        BoxCollider col = previewInstance.GetComponentInChildren<BoxCollider>();
+                        Vector3 offset = Vector3.zero;
+    
+                        if (col != null)
+                        {
+                            Vector3 center = col.center;
+                            Vector3 size = col.size;
+    
+                            float yOffset = 0.5f + ((size.y * 0.5f) - center.y);
+                            offset = new Vector3(-center.x, yOffset, -center.z);
+                        }
+    
+                        Vector3 snapped = SnapToTileCenter(targetPos);
+                        previewInstance.transform.position = snapped + offset;
+                    }
+                    
+                    if (previewInstance != null)
+                    {
+                        UpdatePreview();
+                    }
+                }
+            }
+            else
+            {
+                DestroyPreviewInstance();
+            }
+        }
+    
+        if (previewInstance != null)
+        {
+            // Q 회전 처리
+            if (Keyboard.current.qKey.wasPressedThisFrame)
+            {
+                float currentTime = Time.time;
+                if (currentTime - qLastTapTime <= doubleTapThreshold)
+                {
+                    // 더블탭 감지
+                    previewInstance.transform.Rotate(Vector3.up, -90f);
+                    qLastTapTime = -1f; // 초기화
+                }
+                else
+                {
+                    qLastTapTime = currentTime;
+                }
+    
+                qHoldTime = 0f; // 길게 누르기 타이머 리셋
+            }
+    
+            if (Keyboard.current.qKey.isPressed)
+            {
+                qHoldTime += Time.deltaTime;
+                if (qHoldTime > holdThreshold)
+                {
+                    previewInstance.transform.Rotate(Vector3.up, -slowRotateSpeed * Time.deltaTime);
+                }
+            }
+    
+            if (Keyboard.current.qKey.wasReleasedThisFrame)
+            {
+                qHoldTime = 0f;
+            }
+    
+            // E 회전 처리
+            if (Keyboard.current.eKey.wasPressedThisFrame)
+            {
+                float currentTime = Time.time;
+                if (currentTime - eLastTapTime <= doubleTapThreshold)
+                {
+                    previewInstance.transform.Rotate(Vector3.up, 90f);
+                    eLastTapTime = -1f;
+                }
+                else
+                {
+                    eLastTapTime = currentTime;
+                }
+    
+                eHoldTime = 0f;
+            }
+    
+            if (Keyboard.current.eKey.isPressed)
+            {
+                eHoldTime += Time.deltaTime;
+                if (eHoldTime > holdThreshold)
+                {
+                    previewInstance.transform.Rotate(Vector3.up, slowRotateSpeed * Time.deltaTime);
+                }
+            }
+    
+            if (Keyboard.current.eKey.wasReleasedThisFrame)
+            {
+                eHoldTime = 0f;
+            }
+        }
+    }
+ 
     void GenerateQuadTileMap()
     {
         if (!isEditorInit) return;
@@ -352,6 +368,7 @@ public class TileCreator : GenericSingleton<TileCreator>
 
             createPos = createdObj.transform;
         }
+    
         else
         {
             foreach (Transform child in createPos)
@@ -359,9 +376,7 @@ public class TileCreator : GenericSingleton<TileCreator>
                 Destroy(child.gameObject);
             }
         }
-        
-        Dictionary<Vector3, Vector2Int> worldToGridMap = new Dictionary<Vector3, Vector2Int>();
-    
+
         for (int y = 0; y < sizeY; y++)
         {
             for (int x = 0; x < sizeX; x++)
@@ -391,22 +406,7 @@ public class TileCreator : GenericSingleton<TileCreator>
 
         isMapCreated = true;
     }
-    
-    // 타일 컬러 변경
-    void ChangeTileColor(GameObject tile, Color color)
-    {
-        Transform child = tile.transform.childCount > 0 ? tile.transform.GetChild(0) : null;
-        if (child == null) return;
-    
-        Renderer tileRenderer = child.GetComponent<Renderer>();
-        if (tileRenderer == null) return;
-    
-        Material newMaterial = new Material(tileRenderer.material);
-        newMaterial.color = color;
-        tileRenderer.material = newMaterial;
-    }
-    
-    // 리소스 로드
+
     void LoadTilePrefabs()
     {
         tilePrefabs.Clear();
@@ -419,23 +419,10 @@ public class TileCreator : GenericSingleton<TileCreator>
 
         isEditorInit = true;
     }
-    
-    /// <summary>
-    /// 프리뷰 관련
-    /// </summary>
-    /// <param name="obj"></param>
-    
-    void SetPreviewMode(GameObject obj)
-    {
-        ApplyTransparentMaterial(obj);
-        SetPreviewRigidbody(obj);
-        SetPreviewCollider(obj);
-    
-        obj.layer = LayerMask.NameToLayer("Ignore Raycast");
-    }
 
-    void ApplyTransparentMaterial(GameObject obj)
+    private void SetPreviewMode(GameObject obj)
     {
+        // 반투명 처리
         Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
         foreach (Renderer renderer in renderers)
         {
@@ -445,25 +432,24 @@ public class TileCreator : GenericSingleton<TileCreator>
             c.a = 0.5f;
             mat.color = c;
         }
-    }
 
-    void SetPreviewRigidbody(GameObject obj)
-    {
+        // 레이어 설정
+        obj.layer = LayerMask.NameToLayer("Ignore Raycast");
+
+        // Rigidbody 설정
         Rigidbody rb = obj.GetComponent<Rigidbody>();
         if (rb == null)
             rb = obj.AddComponent<Rigidbody>();
         rb.useGravity = false;
         rb.isKinematic = true;
-    }
 
-    void SetPreviewCollider(GameObject obj)
-    {
+        // Collider를 Trigger로 바꾸기
         Collider col = obj.GetComponent<Collider>();
         if (col == null)
             col = obj.AddComponent<BoxCollider>();
         col.isTrigger = true;
     }
-   
+    
     List<TileScript> GetCoveredTilesByCollider(GameObject obj)
     {
         Bounds bounds = obj.GetComponent<Collider>().bounds;
@@ -481,7 +467,6 @@ public class TileCreator : GenericSingleton<TileCreator>
                 TileScript tileScript = tile.GetComponent<TileScript>();
                 if (tileScript != null)
                 {
-                    Debug.Log("충돌타일검색");
                     coveredTiles.Add(tileScript);
                 }
             }
@@ -490,7 +475,6 @@ public class TileCreator : GenericSingleton<TileCreator>
         return coveredTiles;
     }
     
-    // 설치 가능 여부
     bool IsPlaceable(List<TileScript> tiles)
     {
         foreach (var tile in tiles)
@@ -501,29 +485,16 @@ public class TileCreator : GenericSingleton<TileCreator>
         return true;
     }
 
-    // 오브젝트 설치
-    void PlaceObject(GameObject prefab)
+    void PlaceObject(GameObject prefab, Vector3 position)
     {
-        if (previewInstance == null) return;
-        
-        Vector3 spawnPosition = previewInstance.transform.position;
-        Quaternion spawnRotation = previewInstance.transform.rotation;
-        
-        GameObject obj = Instantiate(prefab, spawnPosition, spawnRotation);
+        Quaternion rotation = previewInstance != null ? previewInstance.transform.rotation : Quaternion.identity;
 
-        BoxCollider col = obj.GetComponentInChildren<BoxCollider>();
-        if (col != null)
-        {
-            Vector3 center = col.center;
-            Vector3 size = col.size;
-            float yOffset = (size.y * 0.5f) - center.y;
-            obj.transform.position -= new Vector3(0f, yOffset, 0f);
-        }
-        
-        Collider collider = obj.GetComponent<Collider>();
-        if (collider == null)
-            collider = obj.AddComponent<BoxCollider>();
-        collider.isTrigger = false;
+        GameObject obj = Instantiate(prefab, position, rotation);
+
+        Collider col = obj.GetComponent<Collider>();
+        if (col == null)
+            col = obj.AddComponent<BoxCollider>();
+        col.isTrigger = false;
 
         Rigidbody rb = obj.GetComponent<Rigidbody>();
         if (rb == null)
@@ -536,15 +507,8 @@ public class TileCreator : GenericSingleton<TileCreator>
         {
             tile.SetMovable(false);
         }
-
-        foreach (GameObject tile in lastHighlightedTiles)
-        {
-            ChangeTileColor(tile, defaultTileColor);
-        }
-        lastHighlightedTiles.Clear();
     }
     
-    // 프리뷰 활성화
     void UpdatePreview()
     {
         if (previewInstance == null) return;
@@ -570,24 +534,11 @@ public class TileCreator : GenericSingleton<TileCreator>
             }
         }
         
-        foreach (GameObject tile in lastHighlightedTiles)
-        {
-            ChangeTileColor(tile, defaultTileColor);
-        }
-        lastHighlightedTiles.Clear();
-        
-        foreach (TileScript tileScript in coveredTiles)
-        {
-            GameObject tileObj = tileScript.gameObject;
-            ChangeTileColor(tileObj, previewTileColor);
-            lastHighlightedTiles.Add(tileObj);
-        }
-        
         SetPreviewColor(previewInstance, placeable);
 
         if (Mouse.current.leftButton.wasPressedThisFrame && placeable)
         {
-            PlaceObject(selectedObjectPrefab);
+            PlaceObject(selectedObjectPrefab, previewInstance.transform.position);
         }
     }
     
@@ -597,7 +548,6 @@ public class TileCreator : GenericSingleton<TileCreator>
         return new Vector3(Mathf.Round(pos.x), pos.y, Mathf.Round(pos.z));
     }
     
-    // 프리뷰 컬러 변경
     void SetPreviewColor(GameObject obj, bool placeable)
     {
         Color targetColor = placeable ? new Color(0f, 1f, 0f, 0.4f) : new Color(1f, 0f, 0f, 0.4f);
@@ -610,18 +560,7 @@ public class TileCreator : GenericSingleton<TileCreator>
             mat.color = targetColor;
         }
     }
-    
-    void SelectPrefab(PrefabType type, Action<GameObject> onSelected)
-    {
-        if (!isEditorInit) return;
-        
-        PrefabSelectorPopup.Show(prefab =>
-        {
-            onSelected?.Invoke(prefab);
-        }, type);
-    }
-    
-    // 프리뷰 비활성화
+
     void DestroyPreviewInstance()
     {
         if (previewInstance != null)
@@ -632,14 +571,30 @@ public class TileCreator : GenericSingleton<TileCreator>
         }
     }
     
-    /// <summary>
-    /// 인스펙터 조작용
-    /// </summary>
+    #region 인스펙터용 코드
+
+    void ChangeBrushCheck()
+    {
+        // 오브젝트 설치인 경우 브러시 사이즈 1로 고정
+        if (editStatusEnum == EditStatus.SetObject)
+        {
+            brushSize = 1;
+        }
+    }
+
+    void SelectPrefab(PrefabType type, Action<GameObject> onSelected)
+    {
+        PrefabSelectorPopup.Show(prefab =>
+        {
+            onSelected?.Invoke(prefab);
+        }, type);
+    }
+    
     void OpenTileBrushPrefabSelector()
     {
         SelectPrefab(PrefabType.TilePrefab, prefab => selectedTilePrefab = prefab);
     }
-
+    
     void OpenBasePrefabSelector()
     {
         SelectPrefab(PrefabType.TilePrefab, prefab => baseTilePrefab = prefab);
@@ -650,13 +605,10 @@ public class TileCreator : GenericSingleton<TileCreator>
         {
             selectedObjectPrefab = prefab;
 
-            // 기존 프리뷰 제거
-            if (previewInstance != null)
-            {
-                Destroy(previewInstance);
-                previewInstance = null;
-                lastPreviewTile = null;
-            }
+            DestroyPreviewInstance();
         });
     }
+    
+
+    #endregion
 }
