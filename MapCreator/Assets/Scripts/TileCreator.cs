@@ -108,6 +108,8 @@ public class TileCreator : GenericSingleton<TileCreator>
     private bool IsTileChange() => editStatusEnum == EditStatus.ChangeTile;
     private bool IsObjectSet() => editStatusEnum == EditStatus.SetObject;
     private bool IsStackTile() => editStatusEnum == EditStatus.StackTile;
+
+    private bool isEditorInit;
     
     #endregion
 
@@ -329,6 +331,8 @@ public class TileCreator : GenericSingleton<TileCreator>
     // 맵 생성
     void GenerateQuadTileMap()
     {
+        if (!isEditorInit) return;
+        
         int sizeX = (int)mapSize.x;
         int sizeY = (int)mapSize.y;
     
@@ -412,6 +416,8 @@ public class TileCreator : GenericSingleton<TileCreator>
         tilePrefabs.AddRange(loadedPrefabs);
         
         Debug.Log($"타일 프리팹 {tilePrefabs.Count}개 로드 완료.");
+
+        isEditorInit = true;
     }
     
     /// <summary>
@@ -496,16 +502,28 @@ public class TileCreator : GenericSingleton<TileCreator>
     }
 
     // 오브젝트 설치
-    void PlaceObject(GameObject prefab, Vector3 position)
+    void PlaceObject(GameObject prefab)
     {
-        Quaternion rotation = previewInstance != null ? previewInstance.transform.rotation : Quaternion.identity;
+        if (previewInstance == null) return;
+        
+        Vector3 spawnPosition = previewInstance.transform.position;
+        Quaternion spawnRotation = previewInstance.transform.rotation;
+        
+        GameObject obj = Instantiate(prefab, spawnPosition, spawnRotation);
 
-        GameObject obj = Instantiate(prefab, position, rotation);
-
-        Collider col = obj.GetComponent<Collider>();
-        if (col == null)
-            col = obj.AddComponent<BoxCollider>();
-        col.isTrigger = false;
+        BoxCollider col = obj.GetComponentInChildren<BoxCollider>();
+        if (col != null)
+        {
+            Vector3 center = col.center;
+            Vector3 size = col.size;
+            float yOffset = (size.y * 0.5f) - center.y;
+            obj.transform.position -= new Vector3(0f, yOffset, 0f);
+        }
+        
+        Collider collider = obj.GetComponent<Collider>();
+        if (collider == null)
+            collider = obj.AddComponent<BoxCollider>();
+        collider.isTrigger = false;
 
         Rigidbody rb = obj.GetComponent<Rigidbody>();
         if (rb == null)
@@ -518,7 +536,7 @@ public class TileCreator : GenericSingleton<TileCreator>
         {
             tile.SetMovable(false);
         }
-        
+
         foreach (GameObject tile in lastHighlightedTiles)
         {
             ChangeTileColor(tile, defaultTileColor);
@@ -557,8 +575,7 @@ public class TileCreator : GenericSingleton<TileCreator>
             ChangeTileColor(tile, defaultTileColor);
         }
         lastHighlightedTiles.Clear();
-
-// 새로 칠하기
+        
         foreach (TileScript tileScript in coveredTiles)
         {
             GameObject tileObj = tileScript.gameObject;
@@ -570,7 +587,7 @@ public class TileCreator : GenericSingleton<TileCreator>
 
         if (Mouse.current.leftButton.wasPressedThisFrame && placeable)
         {
-            PlaceObject(selectedObjectPrefab, previewInstance.transform.position);
+            PlaceObject(selectedObjectPrefab);
         }
     }
     
@@ -596,6 +613,8 @@ public class TileCreator : GenericSingleton<TileCreator>
     
     void SelectPrefab(PrefabType type, Action<GameObject> onSelected)
     {
+        if (!isEditorInit) return;
+        
         PrefabSelectorPopup.Show(prefab =>
         {
             onSelected?.Invoke(prefab);
