@@ -6,6 +6,7 @@ TagManager:
   tags:
   - HexTile
   - QuadTile
+  - Object
   layers:
   - Default
   - TransparentFX

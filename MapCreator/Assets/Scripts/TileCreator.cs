@@ -1,15 +1,9 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
 using Sirenix.OdinInspector;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
-using UnityEngine.WSA;
 
 public class TileCreator : GenericSingleton<TileCreator>
 {
@@ -98,6 +92,8 @@ public class TileCreator : GenericSingleton<TileCreator>
     private const float doubleTapThreshold = 0.3f;
     private const float holdThreshold = 0.25f;
     private const float slowRotateSpeed = 90f;
+    
+    private Transform targetParent;
     
     private bool IsTileChange()
     {
@@ -253,6 +249,9 @@ public class TileCreator : GenericSingleton<TileCreator>
                 if (quadTiles.ContainsKey(targetPos))
                 {
                     GameObject tile = quadTiles[targetPos];
+
+                    targetParent = tile.transform;
+                    
                     if (tile != lastPreviewTile)
                     {
                         lastPreviewTile = tile;
@@ -504,6 +503,10 @@ public class TileCreator : GenericSingleton<TileCreator>
 
         GameObject obj = Instantiate(prefab, position, rotation);
 
+        obj.transform.SetParent(targetParent);
+
+        targetParent.GetComponent<TileScript>().SetObjectPrefab(obj);
+        
         Collider col = obj.GetComponent<Collider>();
         if (col == null)
             col = obj.AddComponent<BoxCollider>();
@@ -590,6 +593,8 @@ void UpdatePreview()
     {
         PlaceObject(selectedObjectPrefab, previewInstance.transform.position);
 
+        List<TileScript> getList = new List<TileScript>();
+        
         foreach (GameObject tileChild in highlightedTiles)
         {
             Transform parent = tileChild.transform.parent;
@@ -598,12 +603,14 @@ void UpdatePreview()
                 TileScript tileScript = parent.GetComponent<TileScript>();
                 if (tileScript != null)
                 {
+                    getList.Add(tileScript);
                     tileScript.SetMovable(false);
                 }
             }
-
             ChangeTileColor(tileChild, Color.white);
         }
+        
+        targetParent.GetComponent<TileScript>().SetObjectDisabledTiles(getList);
 
         highlightedTiles.Clear();
     }

@@ -28,6 +28,7 @@ public class TileScript : MonoBehaviour
     [SerializeField, ReadOnly] private GameObject tileObj;
     [SerializeField, ReadOnly] private GameObject objectObj;
     [SerializeField, ReadOnly] private List<GameObject> stackObjList;
+    [SerializeField, ReadOnly] private List<TileScript> objDisabledTiles;
     
     private bool isStackAble;
 
@@ -67,12 +68,7 @@ public class TileScript : MonoBehaviour
     
     public void SetObjectPrefab(GameObject objectPrefab)
     {
-        if (objectObj != null)
-        {
-            Destroy(objectObj);
-        }
-
-        objectObj = Instantiate(objectPrefab, transform);
+        objectObj = objectPrefab;
     }
 
     public bool GetIsStackAble()
@@ -88,5 +84,18 @@ public class TileScript : MonoBehaviour
     public List<GameObject> GetStackList()
     {
         return stackObjList;
+    }
+
+    public void SetObjectDisabledTiles(List<TileScript> getList)
+    {
+        objDisabledTiles = getList;
+    }
+    
+    public void RemoveObjectToMoveAble()
+    {
+        foreach (var tileDatas in objDisabledTiles)
+        {
+            tileDatas.SetMovable(true);   
+        }
     }
 }
