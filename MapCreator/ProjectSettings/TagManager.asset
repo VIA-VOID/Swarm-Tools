@@ -7,6 +7,8 @@ TagManager:
   - HexTile
   - QuadTile
   - Object
+  - WaterTile
+  - MapSaveData
   layers:
   - Default
   - TransparentFX

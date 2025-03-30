@@ -44,11 +44,70 @@ public class TileCreator : GenericSingleton<TileCreator>
     [ShowIf(nameof(IsObjectSet))]
     [InlineButton("OpenObjectPrefabSelector", SdfIconType.Brush, "브러시 변경")]
     private GameObject selectedObjectPrefab;
-    
+
     [Title("맵 데이터 관련")]
+    [LabelText("맵 이름")] [SerializeField]
+    private string mapSaveName;
+    
+    [ButtonGroup("SaveLoad Button Group")]
+    [Button("저장", ButtonSizes.Large)]
+    private void SaveMapPrefab()
+    {
+        string path = "Assets/Resources/Prefabs/MapSavePrefabs";
+        if (!System.IO.Directory.Exists(path))
+            System.IO.Directory.CreateDirectory(path);
+
+        string fileName = string.IsNullOrEmpty(mapSaveName) 
+            ? System.DateTime.Now.ToString("yyyyMMdd_HHmmss") 
+            : mapSaveName;
+
+        string fullPath = System.IO.Path.Combine(path, fileName + ".prefab");
+        
+        ClearTileHighlights();
+
+#if UNITY_EDITOR
+        UnityEditor.PrefabUtility.SaveAsPrefabAssetAndConnect(createPos.gameObject, fullPath, UnityEditor.InteractionMode.AutomatedAction);
+        Debug.Log("맵 저장 완료: " + fullPath);
+#else
+    Debug.LogWarning("에디터에서만 저장 가능합니다.");
+#endif
+    }
+
+    [ButtonGroup("SaveLoad Button Group")]
+    [Button("불러오기", ButtonSizes.Large)]
+    private void LoadMapPrefabList()
+    {
+#if UNITY_EDITOR
+        GameObject[] savedMaps = Resources.LoadAll<GameObject>("Prefabs/MapSavePrefabs");
+
+        if (savedMaps.Length == 0)
+        {
+            Debug.LogWarning("저장된 맵이 없습니다.");
+            return;
+        }
+
+        PrefabSelectorPopup.Show(prefab =>
+        {
+            if (createPos != null)
+            {
+                foreach (Transform child in createPos)
+                {
+                    GameObject.DestroyImmediate(child.gameObject);
+                }
+            }
+
+            GameObject loadedMap = GameObject.Instantiate(prefab, createPos);
+            loadedMap.name = prefab.name;
+            Debug.Log("맵 불러오기 완료: " + prefab.name);
+        }, savedMaps); // ← 여기를 처리하려면 오버로드 함수가 필요!
+#else
+    Debug.LogWarning("에디터에서만 불러오기가 가능합니다.");
+#endif
+    }
+    
     [LabelText("맵 데이터 리스트")]
     [SerializeField]private List<TileScript> tileDatas;
-    
+
     #endregion
     
     #region private 변수
@@ -655,14 +714,13 @@ void UpdatePreview(GameObject preview)
     }
 }
 
-    
     void ChangeTileColor(GameObject tile, Color color)
     {
         Transform child = tile.transform.childCount > 0 ? tile.transform.GetChild(0) : tile.transform;
-    
+
         MeshRenderer renderer = child.GetComponent<MeshRenderer>();
         if (renderer == null) return;
-
+        
         renderer.material.color = color;
     }
     
@@ -705,9 +763,18 @@ void UpdatePreview(GameObject preview)
     {
         foreach (GameObject tile in highlightedTiles)
         {
-            ChangeTileColor(tile, Color.white);
+            ResetTileMaterial(tile);
         }
         highlightedTiles.Clear();
+    }
+    
+    private void ResetTileMaterial(GameObject tile)
+    {
+        Transform child = tile.transform.childCount > 0 ? tile.transform.GetChild(0) : tile.transform;
+        MeshRenderer renderer = child.GetComponent<MeshRenderer>();
+        if (renderer == null) return;
+        
+        renderer.material = renderer.sharedMaterial;
     }
     
     #region 인스펙터용 코드
@@ -721,33 +788,41 @@ void UpdatePreview(GameObject preview)
         }
     }
 
-    void SelectPrefab(PrefabType type, Action<GameObject> onSelected)
+    void SelectPrefab(GameObject[] prefabs, Action<GameObject> onSelected)
     {
         PrefabSelectorPopup.Show(prefab =>
         {
             onSelected?.Invoke(prefab);
-        }, type);
+        }, prefabs);
     }
     
     void OpenTileBrushPrefabSelector()
     {
-        SelectPrefab(PrefabType.TilePrefab, prefab => selectedTilePrefab = prefab);
+#if UNITY_EDITOR
+        GameObject[] tilePrefabs = PresetController.Instance.tilePrefabs.ToArray();
+        SelectPrefab(tilePrefabs, prefab => selectedTilePrefab = prefab);
+#endif
     }
-    
+
     void OpenBasePrefabSelector()
     {
-        SelectPrefab(PrefabType.TilePrefab, prefab => baseTilePrefab = prefab);
+#if UNITY_EDITOR
+        GameObject[] tilePrefabs = PresetController.Instance.tilePrefabs.ToArray();
+        SelectPrefab(tilePrefabs, prefab => baseTilePrefab = prefab);
+#endif
     }
+
     void OpenObjectPrefabSelector()
     {
-        SelectPrefab(PrefabType.ObjectPrefab, prefab =>
+#if UNITY_EDITOR
+        GameObject[] objectPrefabs = PresetController.Instance.objectPrefabs.ToArray();
+        SelectPrefab(objectPrefabs, prefab =>
         {
             selectedObjectPrefab = prefab;
-
             DestroyPreviewInstance();
         });
+#endif
     }
-    
 
     #endregion
 }

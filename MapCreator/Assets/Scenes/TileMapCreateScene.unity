@@ -1402,6 +1402,7 @@ MonoBehaviour:
   selectedTilePrefab: {fileID: 0}
   brushSize: 1
   selectedObjectPrefab: {fileID: 0}
+  mapSaveName: 
   tileDatas: []
 --- !u!4 &1235887458
 Transform:

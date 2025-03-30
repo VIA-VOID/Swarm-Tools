@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEditor;
 using System.IO;
@@ -14,15 +15,23 @@ public class PrefabSelectorPopup : EditorWindow
     private List<GameObject> currentPrefabs = new List<GameObject>();
     private PrefabType currentType;
     
-    public static void Show(System.Action<GameObject> onPrefabSelected, PrefabType type)
+    public static void Show(System.Action<GameObject> onPrefabSelected, GameObject[] prefabs)
     {
         if (!TileCreator.Instance.GetInitStatus()) return;
-        
+
         PrefabSelectorPopup window = GetWindow<PrefabSelectorPopup>("프리팹 선택");
         window.OnPrefabSelected = onPrefabSelected;
-        window.currentType = type;
 
-        window.LoadPrefabs();
+        // GameObject 배열 직접 할당
+        window.currentPrefabs = new List<GameObject>(prefabs);
+        window.previewTextures.Clear();
+
+        foreach (var prefab in prefabs)
+        {
+            window.previewTextures[prefab] = AssetPreview.GetAssetPreview(prefab);
+        }
+
+        EditorApplication.delayCall += () => window.Repaint();
         window.Show();
     }
 

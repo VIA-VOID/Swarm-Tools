@@ -32,7 +32,9 @@ public enum PrefabType
     [LabelText("자연 프리팹")]
     NeutralPrefab,
     [LabelText("오브젝트 프리팹")]
-    ObjectPrefab
+    ObjectPrefab,
+    [LabelText("맵 저장 프리팹")]
+    MapSavePrefab
 }
 
 public enum ResourceCategory
