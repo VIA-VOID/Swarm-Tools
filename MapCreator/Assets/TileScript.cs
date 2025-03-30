@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Newtonsoft.Json;
 using Sirenix.OdinInspector;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -25,12 +26,12 @@ public class TileScript : MonoBehaviour
     // 데이터용
     [SerializeField, ReadOnly] private bool isMovable;
     [SerializeField, ReadOnly] private Pos tilePoint;
-    [SerializeField, ReadOnly] private GameObject tileObj;
-    [SerializeField, ReadOnly] private GameObject objectObj;
-    [SerializeField, ReadOnly] private List<GameObject> stackObjList;
-    [SerializeField, ReadOnly] private List<TileScript> objDisabledTiles;
+    [JsonIgnore][SerializeField, ReadOnly] private GameObject tileObj;
+    [JsonIgnore][SerializeField, ReadOnly] private GameObject objectObj;
+    [JsonIgnore][SerializeField, ReadOnly] private List<GameObject> stackObjList;
+    [JsonIgnore][SerializeField, ReadOnly] private List<TileScript> objDisabledTiles;
     
-    private bool isStackAble;
+    [JsonIgnore] private bool isStackAble;
 
     public void SetTilePoint(int x, int y)
     {

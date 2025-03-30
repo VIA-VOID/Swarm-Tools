@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using Sirenix.OdinInspector;
-using Unity.VisualScripting;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
@@ -54,14 +56,14 @@ public class TileCreator : GenericSingleton<TileCreator>
     private void SaveMapPrefab()
     {
         string path = "Assets/Resources/Prefabs/MapSavePrefabs";
-        if (!System.IO.Directory.Exists(path))
-            System.IO.Directory.CreateDirectory(path);
+        if (!Directory.Exists(path))
+            Directory.CreateDirectory(path);
 
         string fileName = string.IsNullOrEmpty(mapSaveName) 
-            ? System.DateTime.Now.ToString("yyyyMMdd_HHmmss") 
+            ? DateTime.Now.ToString("yyyyMMdd_HHmmss") 
             : mapSaveName;
 
-        string fullPath = System.IO.Path.Combine(path, fileName + ".prefab");
+        string fullPath = Path.Combine(path, fileName + ".prefab");
         
         ClearTileHighlights();
 
@@ -92,17 +94,54 @@ public class TileCreator : GenericSingleton<TileCreator>
             {
                 foreach (Transform child in createPos)
                 {
-                    GameObject.DestroyImmediate(child.gameObject);
+                    DestroyImmediate(child.gameObject);
                 }
             }
 
-            GameObject loadedMap = GameObject.Instantiate(prefab, createPos);
+            GameObject loadedMap = Instantiate(prefab, createPos);
             loadedMap.name = prefab.name;
             Debug.Log("맵 불러오기 완료: " + prefab.name);
         }, savedMaps); // ← 여기를 처리하려면 오버로드 함수가 필요!
 #else
     Debug.LogWarning("에디터에서만 불러오기가 가능합니다.");
 #endif
+    }
+    
+    [ButtonGroup("SaveLoad Button Group")]
+    [Button("Json 저장", ButtonSizes.Large)]
+    private void SaveMapToJson()
+    {
+        string path = "Assets/Resources/MapSaveData";
+        if (!Directory.Exists(path))
+            Directory.CreateDirectory(path);
+
+        string fileName = string.IsNullOrEmpty(mapSaveName) 
+            ? DateTime.Now.ToString("yyyyMMdd_HHmmss") 
+            : mapSaveName;
+
+        string fullPath = Path.Combine(path, fileName + ".json");
+
+        try
+        {
+            List<TileData> saveList = new List<TileData>();
+            foreach (var tile in tileDatas)
+            {
+                TileData data = new TileData
+                {
+                    isMovable = tile.GetIsMovable() ? 1 : 0,
+                    tilePoint = tile.GetTilePoint()
+                };
+                saveList.Add(data);
+            }
+
+            var json = JsonConvert.SerializeObject(saveList, Formatting.Indented);
+            File.WriteAllText(fullPath, json, Encoding.UTF8);
+            Debug.Log("맵 JSON 저장 완료: " + fullPath);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("맵 저장 실패: " + ex.Message);
+        }
     }
     
     [LabelText("맵 데이터 리스트")]
