@@ -65,10 +65,20 @@ public class TileScript : MonoBehaviour
 
         tileObj = Instantiate(tilePrefab, transform);
     }
+
+    public GameObject GetObjectPrefab()
+    {
+        return objectObj;
+    }
     
     public void SetObjectPrefab(GameObject objectPrefab)
     {
         objectObj = objectPrefab;
+    }
+
+    public bool CheckObjectPrefab()
+    {
+        return objectObj != null;
     }
 
     public bool GetIsStackAble()
@@ -89,6 +99,11 @@ public class TileScript : MonoBehaviour
     public void SetObjectDisabledTiles(List<TileScript> getList)
     {
         objDisabledTiles = getList;
+    }
+
+    public List<TileScript> GetObjectDisabledTiles()
+    {
+        return objDisabledTiles;
     }
     
     public void RemoveObjectToMoveAble()
