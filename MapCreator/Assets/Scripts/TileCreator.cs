@@ -223,6 +223,26 @@ public class TileCreator : GenericSingleton<TileCreator>
         return isMapCreated;
     }
     
+    public void SetSelectedObjectPrefab(PrefabType type, GameObject prefab)
+    {
+        if (type == PrefabType.TilePrefab)
+        {
+            Debug.Log("타일모드 전환");
+            //오브젝트 설치 모드라면 강제로 타일 변환으로
+        }
+
+        if (type == PrefabType.ObjectPrefab || type == PrefabType.ObjectPrefab)
+        {
+            Debug.Log("오브젝트 설치 모드 전환");
+            
+            // 지우기, 타일변경, 타일 쌓기 모드라면
+            // 오브젝트 설치 모드로 강제로 변환
+        }
+        
+        selectedObjectPrefab = prefab;
+        DestroyPreviewInstance(); // 프리뷰 갱신
+    }
+    
     #endregion
 
     void Update()

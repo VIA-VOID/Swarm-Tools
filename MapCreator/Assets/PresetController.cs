@@ -56,6 +56,16 @@ public class PresetController : GenericSingleton<PresetController>
                 ToggleSelectWindow();
             }
         }
+        
+        if (Keyboard.current.digit1Key.wasPressedThisFrame) OnPresetKeyPressed(1);
+        if (Keyboard.current.digit2Key.wasPressedThisFrame) OnPresetKeyPressed(2);
+        if (Keyboard.current.digit3Key.wasPressedThisFrame) OnPresetKeyPressed(3);
+        if (Keyboard.current.digit4Key.wasPressedThisFrame) OnPresetKeyPressed(4);
+        if (Keyboard.current.digit5Key.wasPressedThisFrame) OnPresetKeyPressed(5);
+        if (Keyboard.current.digit6Key.wasPressedThisFrame) OnPresetKeyPressed(6);
+        if (Keyboard.current.digit7Key.wasPressedThisFrame) OnPresetKeyPressed(7);
+        if (Keyboard.current.digit8Key.wasPressedThisFrame) OnPresetKeyPressed(8);
+        if (Keyboard.current.digit9Key.wasPressedThisFrame) OnPresetKeyPressed(9);
     }
 
     // 🔹 public으로 뺀 토글 함수
@@ -125,6 +135,26 @@ public class PresetController : GenericSingleton<PresetController>
     public Transform GetMainCanvasTransform()
     {
         return mainCanvas;
+    }
+    
+    private void OnPresetKeyPressed(int index)
+    {
+        if (index <= 0 || index > slotList.Count)
+        {
+            Debug.LogWarning($"잘못된 프리셋 인덱스: {index}");
+            return;
+        }
+
+        GameObject prefab = slotList[index - 1].GetAssignedPrefab();
+        if (prefab == null)
+        {
+            Debug.LogWarning($"프리셋 {index}번에 등록된 프리팹이 없습니다.");
+            return;
+        }
+
+        // 예시: 오브젝트 브러시에 적용
+        TileCreator.Instance.SetSelectedObjectPrefab(slotList[index - 1].presetType, prefab);
+        Debug.Log($"프리셋 {index}번 적용됨: {prefab.name}");
     }
 }
 
