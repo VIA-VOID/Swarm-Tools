@@ -152,7 +152,7 @@ namespace QuantumTek.QuantumUI
 
                 if (sourceList != null)
                 {
-                    tabWindow.LoadResourcesWithList(sourceList, prefab);
+                    tabWindow.LoadResourcesWithList(sourceList, prefab, tabWindow.prefabType);
                 }
             }
         }

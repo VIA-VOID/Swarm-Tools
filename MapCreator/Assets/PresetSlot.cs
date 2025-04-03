@@ -1,26 +1,52 @@
-using System;
-using Microsoft.Unity.VisualStudio.Editor;
-using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using TMPro;
 
-[Serializable]
-public class PresetSlot : MonoBehaviour
+public class PresetSlot : MonoBehaviour, IDropHandler
 {
     [SerializeField] private Image prefabImage;
-    [SerializeField] private Image frameImage;
     [SerializeField] private TMP_Text indexText;
 
-    private int index;
+    [SerializeField]private GameObject assignedPrefab;
 
-    public int GetIndex()
-    {
-        return index;
-    }
+    public PrefabType presetType;
 
     public void SetIndex(int getIndex)
     {
-        index = getIndex;
+        indexText.text = getIndex.ToString();
+    }
+
+    public void OnDrop(PointerEventData eventData)
+    {
+        var icon = eventData.pointerDrag?.GetComponent<InvenIcon>();
+        if (icon == null)
+        {
+            Debug.LogWarning("드래그된 아이콘에서 InvenIcon 스크립트를 찾을 수 없습니다.");
+            return;
+        }
+
+        var prefab = icon.GetPrefab();
         
-        indexText.text = index.ToString();
+        if (prefab == null)
+        {
+            Debug.Log("프리팹 감지 실패");
+            return;
+        }
+        else
+        {
+            Debug.Log("감지" + prefab.name);
+
+            presetType = icon.prefabType;
+            prefabImage.sprite = icon.GetIconSprite();
+            prefabImage.enabled = true;
+            
+            assignedPrefab = icon.GetPrefab(); 
+        }
+    }
+    
+    public GameObject GetAssignedPrefab()
+    {
+        return assignedPrefab;
     }
 }

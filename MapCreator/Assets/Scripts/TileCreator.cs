@@ -66,20 +66,15 @@ public class TileCreator : GenericSingleton<TileCreator>
         string fullPath = Path.Combine(path, fileName + ".prefab");
         
         ClearTileHighlights();
-
-#if UNITY_EDITOR
+        
         UnityEditor.PrefabUtility.SaveAsPrefabAssetAndConnect(createPos.gameObject, fullPath, UnityEditor.InteractionMode.AutomatedAction);
         Debug.Log("맵 저장 완료: " + fullPath);
-#else
-    Debug.LogWarning("에디터에서만 저장 가능합니다.");
-#endif
     }
 
     [ButtonGroup("SaveLoad Button Group")]
     [Button("불러오기", ButtonSizes.Large)]
     private void LoadMapPrefabList()
     {
-#if UNITY_EDITOR
         GameObject[] savedMaps = Resources.LoadAll<GameObject>("Prefabs/MapSavePrefabs");
 
         if (savedMaps.Length == 0)
@@ -102,9 +97,6 @@ public class TileCreator : GenericSingleton<TileCreator>
             loadedMap.name = prefab.name;
             Debug.Log("맵 불러오기 완료: " + prefab.name);
         }, savedMaps); // ← 여기를 처리하려면 오버로드 함수가 필요!
-#else
-    Debug.LogWarning("에디터에서만 불러오기가 가능합니다.");
-#endif
     }
     
     [ButtonGroup("SaveLoad Button Group")]
@@ -194,7 +186,7 @@ public class TileCreator : GenericSingleton<TileCreator>
     private const float slowRotateSpeed = 90f;
     
     private Transform targetParent;
-    
+
     private bool IsTileChange()
     {
         DestroyPreviewInstance();
@@ -315,6 +307,9 @@ void HandleBrushPaint()
 
                 case EditStatus.StackTile:
                     if (Time.time - lastStackTime < stackDelay) return;
+
+                    if (selectedTilePrefab == null) return;
+                    
                     tileScript.SetMovable(false);
                     List<GameObject> stackObjList = tileScript.GetStackList() ?? new List<GameObject>();
                     if (stackObjList.Count < 5)
@@ -569,6 +564,8 @@ void HandleBrushPaint()
         Camera.main.transform.position = new Vector3(cameraPos, mapSize.y, cameraPos);
 
         isMapCreated = true;
+        
+        PresetController.Instance.PresetListON();
     }
 
     void LoadTilePrefabs()

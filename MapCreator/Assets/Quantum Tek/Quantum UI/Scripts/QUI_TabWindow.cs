@@ -43,19 +43,14 @@ namespace QuantumTek.QuantumUI
                 InvenIcon icon = icons[i];
 
                 int tryCount = 30;
+                Texture2D preview = null;
+
                 while (tryCount-- > 0)
                 {
-                    Texture2D preview = AssetPreview.GetAssetPreview(prefab);
+                    preview = AssetPreview.GetAssetPreview(prefab);
+
                     if (preview != null)
-                    {
-                        icon.SetIconImage(preview);
-                        
-                        var tr = icon.transform as RectTransform;
-                        tr.localScale = Vector3.zero;
-                        tr.DOScale(Vector3.one, 0.25f).SetEase(Ease.OutBack);
-                        
                         break;
-                    }
 
                     if (!AssetPreview.IsLoadingAssetPreview(prefab.GetInstanceID()))
                         AssetPreview.GetAssetPreview(prefab);
@@ -63,12 +58,26 @@ namespace QuantumTek.QuantumUI
                     yield return new EditorWaitForSeconds(0.1f);
                 }
 
+                if (preview != null)
+                {
+                    icon.SetIconImage(preview);
+
+                    RectTransform tr = icon.transform as RectTransform;
+                    tr.localScale = Vector3.zero;
+                    tr.DOScale(Vector3.one, 0.25f).SetEase(Ease.OutBack);
+                }
+                else
+                {
+                    Debug.LogWarning($"프리뷰 로드 실패: {prefab.name}");
+                }
+
                 yield return new EditorWaitForSeconds(0.05f);
             }
         }
+
 #endif
 
-        public void LoadResourcesWithList(List<GameObject> prefabList, GameObject itemPrefab)
+        public void LoadResourcesWithList(List<GameObject> prefabList, GameObject itemPrefab, PrefabType prefabType)
         {
             foreach (Transform child in listParent)
             {
@@ -83,6 +92,8 @@ namespace QuantumTek.QuantumUI
             {
                 GameObject go = Instantiate(itemPrefab, listParent);
                 var icon = go.GetComponent<InvenIcon>();
+                icon.SetPrefab(prefab);
+                icon.prefabType = prefabType;
                 iconList.Add(icon);
             }
 #if UNITY_EDITOR

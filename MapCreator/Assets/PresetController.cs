@@ -26,7 +26,7 @@ public class PresetController : GenericSingleton<PresetController>
     private GameObject createdInvenPopup;
     private bool isSelectWindowActive;
 
-    void Start()
+    public void PresetListON()
     {
         for (int i = 1; i <= 9; i++)
         {
@@ -51,7 +51,10 @@ public class PresetController : GenericSingleton<PresetController>
     {
         if (Keyboard.current.iKey.wasPressedThisFrame)
         {
-            ToggleSelectWindow();
+            if (TileCreator.Instance.GetInitStatus())
+            {
+                ToggleSelectWindow();
+            }
         }
     }
 
@@ -117,6 +120,11 @@ public class PresetController : GenericSingleton<PresetController>
         }
 
         Debug.Log("프리셋 프리팹 로딩 완료");
+    }
+
+    public Transform GetMainCanvasTransform()
+    {
+        return mainCanvas;
     }
 }
 
