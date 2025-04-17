@@ -28,6 +28,8 @@ public class PresetController : GenericSingleton<PresetController>
 
     public void PresetListON()
     {
+        ClearPresetList();
+        
         for (int i = 1; i <= 9; i++)
         {
             GameObject slotObj = Instantiate(presetSlotPrefab, slotParent);
@@ -152,9 +154,20 @@ public class PresetController : GenericSingleton<PresetController>
             return;
         }
 
-        // 예시: 오브젝트 브러시에 적용
-        TileCreator.Instance.SetSelectedObjectPrefab(slotList[index - 1].presetType, prefab);
-        Debug.Log($"프리셋 {index}번 적용됨: {prefab.name}");
+        PrefabType presetType = slotList[index - 1].presetType;
+        
+        TileCreator.Instance.SetSelectedObjectPrefab(presetType, prefab);
+        Debug.Log($"프리셋 {index}번 적용됨: {prefab.name} (모드: {TileCreator.Instance.editStatusEnum})");
+    }
+
+    public void ClearPresetList()
+    {
+        foreach (var slot in slotList)
+        {
+            if (slot != null)
+                GameObject.Destroy(slot.gameObject);
+        }
+        slotList.Clear();
     }
 }
 

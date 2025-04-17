@@ -186,7 +186,11 @@ public class TileCreator : GenericSingleton<TileCreator>
     private const float slowRotateSpeed = 90f;
     
     private Transform targetParent;
+    
+    private bool suppressPreviewThisFrame = false;
 
+    private Vector2 lastMousePosition;
+    
     private bool IsTileChange()
     {
         DestroyPreviewInstance();
@@ -227,20 +231,20 @@ public class TileCreator : GenericSingleton<TileCreator>
     {
         if (type == PrefabType.TilePrefab)
         {
-            Debug.Log("타일모드 전환");
-            //오브젝트 설치 모드라면 강제로 타일 변환으로
+            Debug.Log("타일 쌓기 모드로 전환");
+            editStatusEnum = EditStatus.StackTile;
+            selectedTilePrefab = prefab;
         }
 
         if (type == PrefabType.ObjectPrefab || type == PrefabType.ObjectPrefab)
         {
-            Debug.Log("오브젝트 설치 모드 전환");
-            
-            // 지우기, 타일변경, 타일 쌓기 모드라면
-            // 오브젝트 설치 모드로 강제로 변환
+            Debug.Log("오브젝트 설치 모드로 전환");
+            editStatusEnum = EditStatus.SetObject;
+            selectedObjectPrefab = prefab;
         }
-        
-        selectedObjectPrefab = prefab;
-        DestroyPreviewInstance(); // 프리뷰 갱신
+
+        suppressPreviewThisFrame = true; // 🔹 프리뷰 생성을 한 프레임 막기
+        DestroyPreviewInstance();
     }
     
     #endregion
@@ -258,7 +262,12 @@ void HandleBrushPaint()
 {
     if (!Mouse.current.leftButton.isPressed) return;
 
-    if (!Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit)) return;
+    if (!Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit))
+    {
+        DestroyPreviewInstance();
+        ClearTileHighlights();
+        return;
+    }
 
     Vector3 centerPos = hit.collider.transform.position;
     int range = brushSize;
@@ -361,16 +370,31 @@ void HandleBrushPaint()
     
     void HandlePreviewObject()
     {
-        if (!(editStatusEnum == EditStatus.SetObject && selectedObjectPrefab != null)) return;
-
-        if (!Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit previewHit))
+        if (!(editStatusEnum == EditStatus.SetObject && selectedObjectPrefab != null))
         {
-            DestroyPreviewInstance(objectPreviewInstance);
+            DestroyPreviewInstance();
             return;
         }
-
+        
+        if (!Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit previewHit))
+        {
+            DestroyPreviewInstance();
+            return;
+        }
+        
+        
         Vector3 targetPos = SnapToTileCenter(previewHit.collider.transform.position);
-        if (!quadTiles.ContainsKey(targetPos)) return;
+        if (!quadTiles.ContainsKey(targetPos))
+        {
+            DestroyPreviewInstance();
+            return;
+        }
+        
+        if (suppressPreviewThisFrame)
+        {
+            suppressPreviewThisFrame = false;
+            return;
+        }
 
         GameObject tile = quadTiles[targetPos];
         targetParent = tile.transform;
@@ -563,6 +587,8 @@ void HandleBrushPaint()
                 Vector3 worldPos = new Vector3(x, 0, sizeY - 1 - y);
                 GameObject tile = Instantiate(tilePrefab, createPos.position + worldPos, Quaternion.identity, createPos);
 
+                tile.name = $"Tile_{x}_{y}";
+                
                 TileScript getTile = tile.GetComponent<TileScript>();
                 getTile.SetTilePrefab(baseTilePrefab);
                 getTile.SetMovable(true);
@@ -584,7 +610,7 @@ void HandleBrushPaint()
         Camera.main.transform.position = new Vector3(cameraPos, mapSize.y, cameraPos);
 
         isMapCreated = true;
-        
+
         PresetController.Instance.PresetListON();
     }
 
@@ -616,6 +642,10 @@ void HandleBrushPaint()
 
         // 레이어 설정
         obj.layer = LayerMask.NameToLayer("Ignore Raycast");
+        foreach (Transform child in obj.transform)
+        {
+            child.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+        }
 
         // Rigidbody 설정
         Rigidbody rb = obj.GetComponent<Rigidbody>();
@@ -658,19 +688,43 @@ void HandleBrushPaint()
     
     bool IsPlaceable(List<TileScript> tiles)
     {
+        if (tiles == null) return false;
+
         foreach (var tile in tiles)
         {
             if (!tile.GetIsMovable())
                 return false;
         }
+
         return true;
     }
+    
+    bool IsWithinMapBounds(Bounds bounds)
+    {
+        float mapWidth = mapSize.x;
+        float mapHeight = mapSize.y;
 
+        Vector3 min = bounds.min;
+        Vector3 max = bounds.max;
+
+        // x,z 좌표 기준 검사 (Y는 무시)
+        if (min.x < 0 || min.z < 0 || max.x >= mapWidth || max.z >= mapHeight)
+            return false;
+
+        return true;
+    }
+    
     void PlaceObject(GameObject prefab, Vector3 position, Quaternion rotation)
     {
         GameObject obj = Instantiate(prefab, position, rotation);
         obj.transform.SetParent(targetParent);
 
+        TileScript parentTile = targetParent.GetComponent<TileScript>();
+        Pos tilePoint = parentTile.GetTilePoint();
+        obj.name = $"{prefab.name}_on_{tilePoint.x}_{tilePoint.y}";
+
+        parentTile.SetObjectPrefab(obj);
+        
         targetParent.GetComponent<TileScript>().SetObjectPrefab(obj);
 
         Collider col = obj.GetComponent<Collider>();
@@ -693,11 +747,24 @@ void HandleBrushPaint()
     
 void UpdatePreview(GameObject preview)
 {
-    if (preview == null) return;
-
-    List<TileScript> coveredTiles = GetCoveredTilesByCollider(preview);
-    bool placeable = IsPlaceable(coveredTiles);
-
+    Vector2 currentMousePos = Mouse.current.position.ReadValue();
+    if (Vector2.Distance(lastMousePosition, currentMousePos) < 0.1f)
+    {
+        return; // 마우스가 거의 안 움직였으면 프리뷰 갱신 생략
+    }
+    lastMousePosition = currentMousePos;
+    
+    if (preview == null)
+    {
+        ClearTileHighlights();
+        return;
+    }
+    
+    Bounds bounds = preview.GetComponent<Collider>().bounds;
+    List<TileScript> coveredTiles = GetCoveredTilesByBounds(bounds);
+    
+    bool placeable = IsPlaceable(coveredTiles); 
+    
     foreach (var tile in highlightedTiles)
     {
         ChangeTileColor(tile, Color.white);
@@ -739,6 +806,7 @@ void UpdatePreview(GameObject preview)
                 if (!isMovable) placeable = false;
 
                 highlightedTiles.Add(tileChild);
+                Debug.Log("Highlight 대상: " + hit.name + " / pos: " + tileChild.transform.position);
             }
         }
     }
@@ -776,8 +844,9 @@ void UpdatePreview(GameObject preview)
 
         MeshRenderer renderer = child.GetComponent<MeshRenderer>();
         if (renderer == null) return;
-        
-        renderer.material.color = color;
+
+        if (renderer.material.color != color)
+            renderer.material.color = color;
     }
     
     // 높이 변경 없음
@@ -829,8 +898,41 @@ void UpdatePreview(GameObject preview)
         Transform child = tile.transform.childCount > 0 ? tile.transform.GetChild(0) : tile.transform;
         MeshRenderer renderer = child.GetComponent<MeshRenderer>();
         if (renderer == null) return;
-        
-        renderer.material = renderer.sharedMaterial;
+
+        if (renderer.material.HasProperty("_Color"))
+        {
+            renderer.material.color = Color.white; // 🔄 확실하게 원래 색상으로 복구
+        }
+    }
+
+    List<TileScript> GetCoveredTilesByBounds(Bounds bounds)
+    {
+        List<TileScript> coveredTiles = new List<TileScript>();
+
+        Vector3 min = bounds.min;
+        Vector3 max = bounds.max;
+
+        for (int x = Mathf.FloorToInt(min.x); x <= Mathf.FloorToInt(max.x); x++)
+        {
+            for (int z = Mathf.FloorToInt(min.z); z <= Mathf.FloorToInt(max.z); z++)
+            {
+                Vector3 pos = new Vector3(x, 0, z);
+                if (quadTiles.TryGetValue(pos, out GameObject tile))
+                {
+                    TileScript tileScript = tile.GetComponent<TileScript>();
+                    if (tileScript != null)
+                    {
+                        coveredTiles.Add(tileScript);
+                    }
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        return coveredTiles;
     }
     
     #region 인스펙터용 코드
