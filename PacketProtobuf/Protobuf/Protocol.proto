@@ -1,0 +1,25 @@
+syntax = "proto3";
+package Protocol;
+
+option csharp_namespace = "Google.Protobuf.Protocol";
+
+import "Enum.proto";
+import "Struct.proto";
+
+message SC_PLAYER
+{
+	uint64 id = 1;
+	uint32 hp = 2;
+	uint32 attack = 3;
+	repeated BuffData buffs = 4;
+	PlayerType playerType = 5;
+}
+
+message CS_PLAYER
+{
+	uint64 id = 1;
+	uint32 hp = 2;
+	uint32 attack = 3;
+	repeated BuffData buffs = 4;
+	PlayerType playerType = 5;
+}

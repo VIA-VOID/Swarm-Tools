@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35818.85 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PacketProtobuf", "PacketProtobuf.csproj", "{C724C5C8-A1FA-4AEC-9B1F-8551D79B44B8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C724C5C8-A1FA-4AEC-9B1F-8551D79B44B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C724C5C8-A1FA-4AEC-9B1F-8551D79B44B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C724C5C8-A1FA-4AEC-9B1F-8551D79B44B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C724C5C8-A1FA-4AEC-9B1F-8551D79B44B8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5B9C02BC-AE10-40EA-B35C-0E80EF937999}
+	EndGlobalSection
+EndGlobal
