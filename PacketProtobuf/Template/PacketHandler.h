@@ -1,20 +1,11 @@
 #pragma once
 #include "Protocol/Protocol.pb.h"
+#include "Network/Session.h"
+#include "Utils/Utils.h"
+
+class Session;
 
 using PacketFunc = std::function<void(Session*, BYTE*, uint16)>;
-
-/*
-	패킷구조
-	[id][size][protobuf data]
-	- id: 프로토콜 ID
-	- size: 패킷 전체 크기(헤더 포함)
-	- data: 직렬화된 protobuf 데이터
-*/
-struct PacketHeader
-{
-	uint16 id;
-	uint16 size;
-};
 
 enum : uint16
 {
@@ -68,7 +59,7 @@ inline void PacketHandler::HandlePacket(RunFunc func, Session* session, BYTE* bu
 
 	if (packet.ParseFromArray(payload, payloadSize) == false)
 	{
-		LOG_ERROR(L"Packet ParseFromArray 실패: " + typeid(RunFunc).name() + L"payloadSize: ", payloadSize);
+		LOG_ERROR(L"Packet ParseFromArray 실패: " + Utils::ConvertUtf16(typeid(RunFunc).name()) + L", packetSize: " + Utils::ToWString(len));
 	}
 
 	func(session, packet);
