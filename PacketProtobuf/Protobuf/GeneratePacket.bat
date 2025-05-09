@@ -7,6 +7,7 @@ set PROJ_PATH=%CD%\..
 set CS_PROJ=%PROJ_PATH%\PacketProtobuf.csproj
 set SERVER_PATH=..\..\..\SwarmServer\GameServer
 set DUMMY_CLIENT_PATH=..\..\..\SwarmServer\DummyClient
+set UNITY_CLIENT_PATH=..\..\..\SwarmClient\Client\Assets\Scripts
 
 echo [INFO] Current Directory: %CD%
 echo [INFO] Project Directory: %CS_PROJ%
@@ -49,6 +50,14 @@ XCOPY /Y Struct.pb.cc "%DUMMY_CLIENT_PATH%\Protocol"
 XCOPY /Y Protocol.pb.h "%DUMMY_CLIENT_PATH%\Protocol"
 XCOPY /Y Protocol.pb.cc "%DUMMY_CLIENT_PATH%\Protocol"
 XCOPY /Y ClientPacketHandler.h "%DUMMY_CLIENT_PATH%\Packet"
+
+echo [INFO] Copying generated files to SwarmClient...
+XCOPY /Y Enum.pb.cs "%UNITY_CLIENT_PATH%\Protocol"
+XCOPY /Y Struct.pb.cs "%UNITY_CLIENT_PATH%\Protocol"
+XCOPY /Y Protocol.pb.cs "%UNITY_CLIENT_PATH%\Protocol"
+XCOPY /Y PacketManager.cs "%UNITY_CLIENT_PATH%\Managers"
+XCOPY /Y PacketHeader.cs "%UNITY_CLIENT_PATH%\Network"
+XCOPY /Y PacketHandler.cs "%UNITY_CLIENT_PATH%\Network"
 
 :: 생성된 파일 정리
 echo [INFO] Cleaning up temporary files...
