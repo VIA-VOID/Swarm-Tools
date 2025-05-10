@@ -52,9 +52,9 @@ XCOPY /Y Protocol.pb.cc "%DUMMY_CLIENT_PATH%\Protocol"
 XCOPY /Y ClientPacketHandler.h "%DUMMY_CLIENT_PATH%\Packet"
 
 echo [INFO] Copying generated files to SwarmClient...
-XCOPY /Y Enum.pb.cs "%UNITY_CLIENT_PATH%\Protocol"
-XCOPY /Y Struct.pb.cs "%UNITY_CLIENT_PATH%\Protocol"
-XCOPY /Y Protocol.pb.cs "%UNITY_CLIENT_PATH%\Protocol"
+XCOPY /Y Enum.cs "%UNITY_CLIENT_PATH%\Protocol"
+XCOPY /Y Struct.cs "%UNITY_CLIENT_PATH%\Protocol"
+XCOPY /Y Protocol.cs "%UNITY_CLIENT_PATH%\Protocol"
 XCOPY /Y PacketManager.cs "%UNITY_CLIENT_PATH%\Managers"
 XCOPY /Y PacketHeader.cs "%UNITY_CLIENT_PATH%\Network"
 XCOPY /Y PacketHandler.cs "%UNITY_CLIENT_PATH%\Network"
