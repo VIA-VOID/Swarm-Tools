@@ -22,8 +22,8 @@ namespace PacketProtobuf
             string headerTemplatePath = Path.Combine("..", "Template", "Client", "PacketHeader.cs");
 
             // 템플릿 파일 존재 확인
-            if (File.Exists(handlerTemplatePath) == false || 
-                File.Exists(managerTemplatePath) == false || 
+            if (File.Exists(handlerTemplatePath) == false ||
+                File.Exists(managerTemplatePath) == false ||
                 File.Exists(headerTemplatePath) == false)
             {
                 Console.WriteLine("[ERROR] 템플릿 파일 없음");
@@ -92,10 +92,10 @@ namespace PacketProtobuf
                 {
                     foreach (string name in packets)
                     {
-                        output.Add($"\t\tRegisterFactory((ushort)PacketId.{name}, () => new Google.Protobuf.Protocol.{name}());");
+                        output.Add($"\t\tRegisterFactory(PacketId.{name}, () => new Google.Protobuf.Protocol.{name}());");
                     }
                 }
-                else if(line.Contains("//Debug"))
+                else if (line.Contains("//Debug"))
                 {
                     output.Add(line.Replace("//Debug", "Debug"));
                 }
@@ -137,14 +137,14 @@ namespace PacketProtobuf
                 {
                     foreach (string name in packets)
                     {
-                        output.Add($"\t\tpacketManager.RegisterType<Google.Protobuf.Protocol.{name}>((ushort)PacketId.{name});");
+                        output.Add($"\t\tpacketManager.RegisterType<Google.Protobuf.Protocol.{name}>(PacketId.{name});");
                     }
                 }
                 else if (line.Contains("//GenerateHere register"))
                 {
                     foreach (string name in packets)
                     {
-                        output.Add($"\t\tpacketManager.Register((ushort)PacketId.{name}, msg => Handle_{name}((Google.Protobuf.Protocol.{name})msg));");
+                        output.Add($"\t\tpacketManager.Register(PacketId.{name}, msg => Handle_{name}((Google.Protobuf.Protocol.{name})msg));");
                     }
                 }
                 else
