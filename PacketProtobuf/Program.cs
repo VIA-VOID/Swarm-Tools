@@ -4,7 +4,7 @@
 					Program
 
 - Protobuf 자동화 코드
-- Template/PacketHandler.h 기반으로 .proto에 해당하는
+- Template/*.h 기반으로 .proto에 해당하는
   패킷 자동화 코드 작성
 --------------------------------------------------------*/
 
