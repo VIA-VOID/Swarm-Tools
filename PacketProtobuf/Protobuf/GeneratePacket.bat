@@ -55,9 +55,9 @@ echo [INFO] Copying generated files to SwarmClient...
 XCOPY /Y Enum.cs "%UNITY_CLIENT_PATH%\Protocol"
 XCOPY /Y Struct.cs "%UNITY_CLIENT_PATH%\Protocol"
 XCOPY /Y Protocol.cs "%UNITY_CLIENT_PATH%\Protocol"
-XCOPY /Y PacketManager.cs "%UNITY_CLIENT_PATH%\Managers"
-XCOPY /Y PacketHeader.cs "%UNITY_CLIENT_PATH%\Network"
-XCOPY /Y PacketHandler.cs "%UNITY_CLIENT_PATH%\Network"
+XCOPY /Y PacketHeader.cs "%UNITY_CLIENT_PATH%\Packet"
+XCOPY /Y PacketHandler.cs "%UNITY_CLIENT_PATH%\Packet"
+XCOPY /Y PacketSystem.cs "%UNITY_CLIENT_PATH%\Packet"
 
 :: 생성된 파일 정리
 echo [INFO] Cleaning up temporary files...
