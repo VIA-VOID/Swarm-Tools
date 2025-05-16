@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 /*--------------------------------------------------------
 					ClientAutoGenerate
@@ -7,155 +8,70 @@ using System.Text.RegularExpressions;
 - Protobuf 자동화 코드, SwarmClient(Unity)에 적용
 - Template 기반으로 .proto에 해당하는 패킷 자동화 코드 작성
 --------------------------------------------------------*/
-namespace PacketProtobuf
+public class ClientAutoGenerate
 {
-    internal class ClientAutoGenerate
+    public static void GenerateClient(string[] args)
     {
-        public static void GenerateClient(string[] args)
+        string protoPath = args.Length > 0 ? args[0] : "./";
+        string[] protoFiles = Directory.GetFiles(protoPath, "*.proto");
+
+        // 템플릿 파일 경로
+        string handlerTemplatePath = Path.Combine("..", "Template", "Client", "PacketHandler.cs");
+        string headerTemplatePath = Path.Combine("..", "Template", "Client", "PacketHeader.cs");
+        string systemTemplatePath = Path.Combine("..", "Template", "Client", "PacketSystem.cs");
+
+        // 템플릿 파일 존재 확인
+        if (File.Exists(handlerTemplatePath) == false ||
+            File.Exists(systemTemplatePath) == false ||
+            File.Exists(headerTemplatePath) == false)
         {
-            string protoPath = args.Length > 0 ? args[0] : "./";
-            string[] protoFiles = Directory.GetFiles(protoPath, "*.proto");
-
-            // 템플릿 파일 경로
-            string handlerTemplatePath = Path.Combine("..", "Template", "Client", "PacketHandler.cs");
-            string managerTemplatePath = Path.Combine("..", "Template", "Client", "PacketManager.cs");
-            string headerTemplatePath = Path.Combine("..", "Template", "Client", "PacketHeader.cs");
-
-            // 템플릿 파일 존재 확인
-            if (File.Exists(handlerTemplatePath) == false ||
-                File.Exists(managerTemplatePath) == false ||
-                File.Exists(headerTemplatePath) == false)
-            {
-                Console.WriteLine("[ERROR] 템플릿 파일 없음");
-                return;
-            }
-
-            List<string> allPackets = new List<string>();
-            foreach (string file in protoFiles)
-            {
-                foreach (string line in File.ReadLines(file))
-                {
-                    Match match = Regex.Match(line, @"message\s+(CS_\w+|SC_\w+)");
-                    if (match.Success)
-                    {
-                        allPackets.Add(match.Groups[1].Value);
-                    }
-                }
-            }
-
-            List<string> serverPackets = allPackets.Where(p => p.StartsWith("SC_")).OrderBy(p => p).ToList();
-            List<string> clientPackets = allPackets.Where(p => p.StartsWith("CS_")).OrderBy(p => p).ToList();
-
-            GeneratePacketHeader(allPackets, headerTemplatePath, protoPath);
-            GeneratePacketManager(allPackets, managerTemplatePath, protoPath);
-            GeneratePacketHandler(serverPackets, handlerTemplatePath, protoPath);
+            Console.WriteLine("[ERROR] 템플릿 파일 없음");
+            return;
         }
 
-        private static void GeneratePacketHeader(List<string> packets, string templatePath, string outputDir)
+        List<string> allPackets = new List<string>();
+        foreach (string file in protoFiles)
         {
-            string[] lines = File.ReadAllLines(templatePath);
-            List<string> output = new List<string>();
-            int baseId = 0;
-
-            foreach (string line in lines)
+            foreach (string line in File.ReadLines(file))
             {
-                if (line.Contains("//GenerateHere packetId"))
+                Match match = Regex.Match(line, @"message\s+(CS_\w+|SC_\w+)");
+                if (match.Success)
                 {
-                    foreach (string name in packets)
-                    {
-                        output.Add($"\t{name} = {baseId++},");
-                    }
-                }
-                else
-                {
-                    output.Add(line);
+                    allPackets.Add(match.Groups[1].Value);
                 }
             }
-
-            string outPath = Path.Combine(outputDir, "PacketHeader.cs");
-            File.WriteAllLines(outPath, output);
-            Console.WriteLine("[SUCCESS] PacketHeader.cs 생성 완료");
         }
 
-        private static void GeneratePacketManager(List<string> packets, string templatePath, string outputDir)
+        allPackets.Sort();
+        List<string> clientPackets = allPackets.Where(p => p.StartsWith("SC_")).OrderBy(p => p).ToList();
+        Dictionary<string, List<string>> clientDomains = new Dictionary<string, List<string>>();
+
+        // 도메인별로 저장
+        SaveDomains(clientPackets, clientDomains);
+
+        // 코드 자동생성
+        // PacketHeader.cs
+        GeneratePacketHeader.Generate(allPackets, headerTemplatePath, protoPath);
+        // PacketHandler.cs
+        GeneratePacketHandler.Generate(clientDomains, handlerTemplatePath, protoPath);
+        // PacketSystem.cs
+        GeneratePacketSystem.Generate(clientDomains, systemTemplatePath, protoPath);
+    }
+
+    private static void SaveDomains(List<string> packets, Dictionary<string, List<string>> domains)
+    {
+        // 도메인별로 저장
+        foreach (string name in packets)
         {
-            string[] lines = File.ReadAllLines(templatePath);
-            List<string> output = new List<string>();
+            string clsName = name.Split('_')[1];
+            string key = char.ToUpper(clsName[0]) + clsName.Substring(1).ToLower();
 
-            foreach (string line in lines)
+            if (domains.ContainsKey(key) == false)
             {
-                if (line.Contains("//using UnityEngine"))
-                {
-                    output.Add(line.Replace("//using", "using"));
-                }
-                else if (line.Contains("//GenerateHere PacketFactory"))
-                {
-                    foreach (string name in packets)
-                    {
-                        output.Add($"\t\tRegisterFactory(PacketId.{name}, () => new Google.Protobuf.Protocol.{name}());");
-                    }
-                }
-                else if (line.Contains("//Debug"))
-                {
-                    output.Add(line.Replace("//Debug", "Debug"));
-                }
-                else
-                {
-                    output.Add(line);
-                }
+                domains[key] = new List<string>();
             }
-
-            string outPath = Path.Combine(outputDir, "PacketManager.cs");
-            File.WriteAllLines(outPath, output);
-            Console.WriteLine("[SUCCESS] PacketManager.cs 생성 완료");
-        }
-
-        private static void GeneratePacketHandler(List<string> packets, string templatePath, string outputDir)
-        {
-            string[] lines = File.ReadAllLines(templatePath);
-            List<string> output = new List<string>();
-
-            foreach (string line in lines)
-            {
-                if (line.Contains("//using UnityEngine"))
-                {
-                    output.Add(line.Replace("//using", "using"));
-                }
-                else if (line.Contains("//GenerateHere methods"))
-                {
-                    foreach (string name in packets)
-                    {
-                        output.Add($"\t// {name} 패킷 처리");
-                        output.Add($"\tpublic static void Handle_{name}(Google.Protobuf.Protocol.{name} packet)");
-                        output.Add("\t{");
-                        output.Add($"\t\tDebug.Log($\"Handle_{name} 호출: {{packet}}\");");
-                        output.Add("\t}");
-                        output.Add("");
-                    }
-                }
-                else if (line.Contains("//GenerateHere packetType"))
-                {
-                    foreach (string name in packets)
-                    {
-                        output.Add($"\t\tpacketManager.RegisterType<Google.Protobuf.Protocol.{name}>(PacketId.{name});");
-                    }
-                }
-                else if (line.Contains("//GenerateHere register"))
-                {
-                    foreach (string name in packets)
-                    {
-                        output.Add($"\t\tpacketManager.Register(PacketId.{name}, msg => Handle_{name}((Google.Protobuf.Protocol.{name})msg));");
-                    }
-                }
-                else
-                {
-                    output.Add(line);
-                }
-            }
-
-            string outPath = Path.Combine(outputDir, "PacketHandler.cs");
-            File.WriteAllLines(outPath, output);
-            Console.WriteLine("[SUCCESS] PacketHandler.cs 생성 완료");
+            domains[key].Add(name);
         }
     }
+
 }
