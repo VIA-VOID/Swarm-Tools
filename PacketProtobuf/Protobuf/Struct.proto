@@ -3,9 +3,3 @@ package Protocol;
 
 option csharp_namespace = "Google.Protobuf.Protocol";
 
-message BuffData
-{
-	uint64 buffId = 1;
-	float remainTime = 2;
-	repeated uint64 victims = 3;
-}
