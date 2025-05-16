@@ -10,7 +10,7 @@ using PacketFunc = std::function<void(Session*, BYTE*, uint16)>;
 enum : uint16
 {
 	// 자동화 코드
-	//GenerateHere Enum
+	// Generate Enum
 };
 
 /*--------------------------------------------------------
@@ -30,7 +30,7 @@ public:
 	static void Init()
 	{
 		// 자동화 코드
-		//GenerateHere Init
+		// Generate Init
 	}
 	// 함수 테이블에 등록된 함수 실행 (템플릿 HandlePacket 함수 실행)
 	static void HandlePacket(Session* session, BYTE* buffer, uint16 len);
@@ -41,7 +41,7 @@ public:
 	template<typename T>
 	static void SendPacket(Session* session, const T& packet, uint16 packetId);
 	// 자동화 코드
-	//GenerateHere Handler
+	// Generate Handler
 
 private:
 	// 함수 테이블

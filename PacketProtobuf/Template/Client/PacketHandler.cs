@@ -1,28 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using Google.Protobuf;
-//using UnityEngine;
+﻿//using Google.Protobuf.Protocol;
 
 /*-------------------------------------------------------
-				PacketHandler
+			(DomainName)BasePacketHandler
 
 - 자동생성 파일 (수정 X)
-- 컨텐츠 로직등에서 PacketHandler를 상속받아, 로직 구현부 구현
+- DomainName : 각 도메인 이름 ex) Player, Monster, etc...
+	- DomainName은 .proto의 SC_(도메인명)에서 가져온다.
+- 컨텐츠 로직등에서 (DomainName)BasePacketHandler 상속받아 함수 구현
+	- 자식 클래스명은 반드시 (DomainName)PacketHandler
+	- 자식 클래스는 반드시 싱글톤이여야 한다.
 --------------------------------------------------------*/
-public class PacketHandler
-{
-    //GenerateHere methods
 
-    // 패킷 핸들러 및 팩토리 등록
-    public static void RegisterPacketHandlers(PacketManager packetManager)
-    {
-        // 패킷 팩토리 등록
-        packetManager.RegisterPacketFactories();
-
-        // 패킷 타입 등록
-        //GenerateHere packetType
-
-        // 패킷 핸들러 등록
-        //GenerateHere register
-    }
-}
+// Generate DomainClass

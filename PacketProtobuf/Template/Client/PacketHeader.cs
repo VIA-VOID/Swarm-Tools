@@ -1,6 +1,7 @@
 ﻿public enum PacketId
 {
-    //GenerateHere packetId
+    INVALID_ID = 0,
+    // Generate PacketId
 }
 
 public struct PacketHeader
