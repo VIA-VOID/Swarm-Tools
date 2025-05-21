@@ -1,6 +1,4 @@
 #pragma once
-#include "Protocol/Protocol.pb.h"
-#include "Network/Session.h"
 #include "Utils/Utils.h"
 
 class Session;
