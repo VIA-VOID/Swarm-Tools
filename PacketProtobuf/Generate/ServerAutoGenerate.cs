@@ -5,8 +5,6 @@
 - Template 기반으로 .proto에 해당하는 패킷 자동화 코드 작성
 --------------------------------------------------------*/
 
-using System.Net.Sockets;
-
 class ServerAutoGenerate
 {
     public static void GenerateServer(List<string> allPackets, Dictionary<string, List<string>> serverDomains, string outputDir)
@@ -61,48 +59,7 @@ class ServerAutoGenerate
         {
             return;
         }
-        string[] lines = File.ReadAllLines(domainHandlerPath);
-
-        foreach (var pair in domains)
-        {
-            string domain = pair.Key;
-            List<string> protocols = pair.Value;
-            List<string> output = new List<string>();
-
-            foreach (string line in lines)
-            {
-                if (line.Contains("// DomainPacketHandler"))
-                {
-                    output.Add($"\t\t\t\t{domain}PacketHandler");
-                }
-                else if (line.Contains("DomainPacketHandler"))
-                {
-                    output.Add($"class {domain}PacketHandler : public PacketHandler");
-                }
-                else if (line.Contains("// Generate RegisterHandler"))
-                {
-                    foreach (string name in protocols)
-                    {
-                        output.Add($"\t\tRegisterPacket<Protocol::{name}>(PacketID::{name}, Handle_{name});");
-                    }
-
-                }
-                else if (line.Contains("// Generate Handler"))
-                {
-                    foreach (string name in protocols)
-                    {
-                        output.Add($"\tstatic void Handle_{name}(Session* session, Protocol::{name}& packet);");
-                    }
-                }
-                else
-                {
-                    output.Add(line);
-                }
-            }
-
-            Common.FullPathWriteFile(output, serverPath, $"{domain}PacketHandler.h");
-        }
-
+        Common.GenerateDomainCode(domains, domainHandlerPath, serverPath);
     }
 
     // PacketHandler::Init() 자동화

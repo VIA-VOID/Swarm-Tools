@@ -51,4 +51,50 @@ class Common
         Console.WriteLine($"[SUCCESS] {fileName} 생성 완료");
     }
 
+    // DomainPacketHandler 자동생성
+    public static void GenerateDomainCode(Dictionary<string, List<string>> domains, string filePath, string outputDirPath)
+    {
+        string[] lines = File.ReadAllLines(filePath);
+
+        foreach (var pair in domains)
+        {
+            string domain = pair.Key;
+            List<string> protocols = pair.Value;
+            List<string> output = new List<string>();
+
+            foreach (string line in lines)
+            {
+                if (line.Contains("// DomainPacketHandler"))
+                {
+                    output.Add($"\t\t\t\t{domain}PacketHandler");
+                }
+                else if (line.Contains("DomainPacketHandler"))
+                {
+                    output.Add($"class {domain}PacketHandler : public PacketHandler");
+                }
+                else if (line.Contains("// Generate RegisterHandler"))
+                {
+                    foreach (string name in protocols)
+                    {
+                        output.Add($"\t\tRegisterPacket<Protocol::{name}>(PacketID::{name}, Handle_{name});");
+                    }
+
+                }
+                else if (line.Contains("// Generate Handler"))
+                {
+                    foreach (string name in protocols)
+                    {
+                        output.Add($"\tstatic void Handle_{name}(Session* session, Protocol::{name}& packet);");
+                    }
+                }
+                else
+                {
+                    output.Add(line);
+                }
+            }
+
+            FullPathWriteFile(output, outputDirPath, $"{domain}PacketHandler.h");
+        }
+    }
+
 }
