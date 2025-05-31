@@ -50,7 +50,7 @@ class ServerAutoGenerate
 
     // (Domain)PacketHandler.h 생성
     // 도메인별 핸들러 생성
-    // 동적으로 생성되는 파일들이라 .bat에서 XCOPY하지 않고 직접 파일을 건네줌
+    // 동적으로 생성되는 파일들이라 .bat에서 COPY하지 않고 직접 파일을 건네줌
     private static void GenerateDomainPacketHandler(Dictionary<string, List<string>> domains)
     {
         string serverPath = "..\\..\\..\\SwarmServer\\GameServer\\Packet";

@@ -1,6 +1,7 @@
 enum ServiceType : UInt16
 {
-    Client,
+    Dummy,
+    Unreal,
     Server
 }
 
