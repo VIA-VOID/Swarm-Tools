@@ -13,7 +13,7 @@ class DomainPacketHandler : public PacketHandler
 public:
 	// 자동생성
 	// 함수 테이블 등록
-	void RegisterHandlers(PacketFunc* handlers) override
+	void RegisterHandlers() override
 	{
 		// Generate RegisterHandler
 	}

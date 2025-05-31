@@ -17,7 +17,7 @@ void PacketHandler::Init()
 	// 도메인별로 함수 테이블 등록
 	for (const auto& handler : _domainHandlerClasses)
 	{
-		handler->RegisterHandlers(_handlers);
+		handler->RegisterHandlers();
 	}
 }
 
