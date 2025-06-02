@@ -4,6 +4,25 @@ package Protocol;
 import "Enum.proto";
 import "Struct.proto";
 
+/*----------------------------
+	플레이어 입장 관련
+----------------------------*/
+
+message SC_PLAYER_ENTER_GAME
+{
+	PlayerInfo playerInfo = 1;		// 플레이어 정보
+}
+
+message CS_PLAYER_ENTER_GAME
+{
+	PlayerType playerType = 1;		// 선택한 직업
+	string name = 2;				// 플레이어 이름
+}
+
+/*----------------------------
+			채팅
+----------------------------*/
+
 message SC_CHAT_MSG
 {
 	uint64 id = 1;
@@ -16,24 +35,4 @@ message CS_CHAT_MSG
 	uint64 id = 1;
 	string msg = 2;
 	MsgType msgType = 3;
-}
-
-message SC_PLAYER_CREATE
-{
-	uint64 id = 1;
-}
-
-message CS_PLAYER_CREATE
-{
-	uint64 id = 1;
-}
-
-message SC_PLAYER_MOVE
-{
-	uint64 id = 1;
-}
-
-message CS_PLAYER_MOVE
-{
-	uint64 id = 1;
 }

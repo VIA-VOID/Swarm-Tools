@@ -1,8 +1,53 @@
 syntax = "proto3";
 package Protocol;
 
+/*----------------------------
+		캐릭터 공용
+----------------------------*/
+enum CharacterType
+{
+	Character_TYPE_NONE = 0;
+	Character_TYPE_PLAYER = 1;
+	Character_TYPE_MONSTER = 2;
+}
+
+enum CharacterState
+{
+	Character_STATE_NONE = 0;
+	Character_STATE_IDLE = 1;
+	Character_STATE_MOVE = 2;
+	Character_STATE_ATTACK = 3;
+	Character_STATE_DEAD = 4;
+}
+
+/*----------------------------
+			Player
+----------------------------*/
+enum PlayerType
+{
+	PLAYER_TYPE_NONE = 0;
+	PLAYER_TYPE_WARRIOR = 1;
+	PLAYER_TYPE_ARCHER = 2;
+	PLAYER_TYPE_PRIEST = 3;
+}
+
+/*----------------------------
+			Monster
+----------------------------*/
+enum MonsterType
+{
+	MONSTER_TYPE_NONE = 0;
+	MONSTER_TYPE_NORMAL = 1;
+	MONSTER_TYPE_ELITE = 2;
+	MONSTER_TYPE_BOSS = 3;
+}
+
+/*----------------------------
+			채팅
+----------------------------*/
 enum MsgType
 {
-	MSG_TYPE_ALL = 0;
-	MSG_TYPE_WORLD = 1;
+	MSG_TYPE_NONE = 0;
+	MSG_TYPE_ALL = 1;
+	MSG_TYPE_WORLD = 2;
 }

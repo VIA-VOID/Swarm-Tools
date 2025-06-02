@@ -1,2 +1,67 @@
 syntax = "proto3";
 package Protocol;
+
+import "Enum.proto";
+
+/*----------------------------
+	위치 및 방향 정보
+----------------------------*/
+
+message PosInfo
+{
+	float x = 1;
+	float y = 2;
+	float z = 3;
+	float yaw = 4;
+}
+
+/*----------------------------
+		스탯 정보
+----------------------------*/
+
+message StatInfo
+{
+	int32 level = 1;
+	int32 hp = 2;
+	int32 maxHp = 3;
+	int32 mp = 4;
+	int32 maxMp = 5;
+	int32 attack = 6;
+	int32 defense = 7;
+	int32 moveSpeed = 8;
+	int32 attackSpeed = 9;
+}
+
+/*----------------------------
+	캐릭터 공용 정보
+----------------------------*/
+
+message CharacterInfo
+{
+	uint64 objectId = 1;				// 고유 ID
+	CharacterType type = 2;				// 캐릭터 타입
+	PosInfo posInfo = 3;				// 위치 및 방향 정보
+	CharacterState state = 4;			// 캐릭터 상태
+	StatInfo statInfo = 5;				// 스탯 정보
+	string name = 6;					// 이름
+}
+
+/*----------------------------
+		플레이어 정보
+----------------------------*/
+
+message PlayerInfo
+{
+	CharacterInfo info = 1;				// 캐릭터 공용 정보
+	PlayerType playerType = 2;			// 직업
+}
+
+/*----------------------------
+		몬스터 정보
+----------------------------*/
+
+message MonsterInfo
+{
+	CharacterInfo info = 1;				// 캐릭터 공용 정보
+	MonsterType monsterType = 2;		// 몬스터 타입
+}
