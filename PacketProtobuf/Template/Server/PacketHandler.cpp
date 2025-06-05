@@ -22,7 +22,7 @@ void PacketHandler::Init()
 }
 
 // 함수 테이블에 등록된 함수 실행 (템플릿 HandlePacket 함수 실행)
-void PacketHandler::HandlePacket(Session* session, BYTE* buffer, uint16 len)
+void PacketHandler::HandlePacket(SessionRef session, BYTE* buffer, uint16 len)
 {
 	PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
 	_handlers[header->id](session, buffer, len);
