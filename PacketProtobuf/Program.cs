@@ -29,9 +29,9 @@ public class Program
             }
         }
 
-        allPackets.Sort();
         List<string> clientPackets = allPackets.Where(p => p.StartsWith("SC_")).ToList();
         List<string> serverPackets = allPackets.Where(p => p.StartsWith("CS_")).ToList();
+        List<string> sortedPackets = clientPackets.Concat(serverPackets).ToList();
 
         // 도메인별로 저장
         Dictionary<string, List<string>> clientDomains = new Dictionary<string, List<string>>();
@@ -41,9 +41,9 @@ public class Program
         Common.SaveDomains(serverPackets, serverDomains);
 
         // 클라이언트 자동화 코드 실행
-        ClientAutoGenerate.GenerateDummyClient(allPackets, clientDomains, protoPath);
-        ClientAutoGenerate.GenerateUnrealClient(allPackets, clientDomains, protoPath);
+        ClientAutoGenerate.GenerateDummyClient(sortedPackets, clientDomains, protoPath);
+        ClientAutoGenerate.GenerateUnrealClient(sortedPackets, clientDomains, protoPath);
         // 서버 자동화 코드 실행
-        ServerAutoGenerate.GenerateServer(allPackets, serverDomains, protoPath);
+        ServerAutoGenerate.GenerateServer(sortedPackets, serverDomains, protoPath);
     }
 }
