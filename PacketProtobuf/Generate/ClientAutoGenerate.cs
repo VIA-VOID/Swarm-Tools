@@ -110,7 +110,7 @@ class ClientAutoGenerate
                 {
                     foreach (string name in protocols)
                     {
-                        output.Add($"\tstatic void Handle_{name}(FSessionRef Session, Protocol::{name}& Packet);");
+                        output.Add($"\tstatic void Handle_{name}(FSessionRef Session, const Protocol::{name}& Packet);");
                     }
                 }
                 else

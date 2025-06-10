@@ -85,7 +85,7 @@ class Common
                 {
                     foreach (string name in protocols)
                     {
-                        output.Add($"\tstatic void Handle_{name}(SessionRef session, Protocol::{name}& packet);");
+                        output.Add($"\tstatic void Handle_{name}(SessionRef session, const Protocol::{name}& packet);");
                     }
                 }
                 else
