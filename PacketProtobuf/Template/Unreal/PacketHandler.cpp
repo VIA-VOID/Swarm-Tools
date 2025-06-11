@@ -21,7 +21,7 @@ void FPacketHandler::Init()
 }
 
 // 함수 테이블에 등록된 함수 실행 (템플릿 HandlePacket 함수 실행)
-void FPacketHandler::HandlePacket(FSession* Session, BYTE* Buffer, uint16 Len)
+void FPacketHandler::HandlePacket(FSessionRef Session, BYTE* Buffer, uint16 Len)
 {
 	const FPacketHeader* Header = reinterpret_cast<FPacketHeader*>(Buffer);
 	Handlers[Header->PacketId](Session, Buffer, Len);
