@@ -9,8 +9,10 @@ FPacketClass FPacketHandler::DomainHandlerClasses;
 
 // 파생 클래스들의 테이블 등록, 초기화
 // 자동생성 코드
-void FPacketHandler::Init()
+void FPacketHandler::Init(UWorld* InWorld)
 {
+	World = InWorld;
+
 	// Generate Init
 
 	// 도메인별로 함수 테이블 등록
