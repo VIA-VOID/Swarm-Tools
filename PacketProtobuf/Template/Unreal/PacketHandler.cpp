@@ -4,6 +4,7 @@
 // 도메인별 핸들러 include
 // Generate include Domain
 
+UWorld* FPacketHandler::World;
 FPacketFunc FPacketHandler::Handlers[UINT16_MAX];
 FPacketClass FPacketHandler::DomainHandlerClasses;
 
