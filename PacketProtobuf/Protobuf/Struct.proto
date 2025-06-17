@@ -33,15 +33,15 @@ message StatInfo
 }
 
 /*----------------------------
-	캐릭터 공용 정보
+		공용 정보
 ----------------------------*/
 
-message CharacterInfo
+message ObjectInfo
 {
 	uint64 objectId = 1;				// 고유 ID
-	CharacterType type = 2;				// 캐릭터 타입
+	ObjectType type = 2;				// Object 타입
 	PosInfo posInfo = 3;				// 위치 및 방향 정보
-	CharacterState state = 4;			// 캐릭터 상태
+	ObjectState state = 4;				// Object 상태
 	StatInfo statInfo = 5;				// 스탯 정보
 	string name = 6;					// 이름
 }
@@ -52,7 +52,7 @@ message CharacterInfo
 
 message PlayerInfo
 {
-	CharacterInfo info = 1;				// 캐릭터 공용 정보
+	ObjectInfo info = 1;				// Object 공용 정보
 	PlayerType playerType = 2;			// 직업
 }
 
@@ -62,6 +62,6 @@ message PlayerInfo
 
 message MonsterInfo
 {
-	CharacterInfo info = 1;				// 캐릭터 공용 정보
+	ObjectInfo info = 1;				// Object 공용 정보
 	MonsterType monsterType = 2;		// 몬스터 타입
 }

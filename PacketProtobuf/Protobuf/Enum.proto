@@ -2,22 +2,23 @@ syntax = "proto3";
 package Protocol;
 
 /*----------------------------
-		캐릭터 공용
+		object 공용
 ----------------------------*/
-enum CharacterType
+enum ObjectType
 {
-	Character_TYPE_NONE = 0;
-	Character_TYPE_PLAYER = 1;
-	Character_TYPE_MONSTER = 2;
+	OBJECT_TYPE_NONE = 0;
+	OBJECT_TYPE_PLAYER = 1;
+	OBJECT_TYPE_MONSTER = 2;
 }
 
-enum CharacterState
+enum ObjectState
 {
-	Character_STATE_NONE = 0;
-	Character_STATE_IDLE = 1;
-	Character_STATE_MOVE = 2;
-	Character_STATE_ATTACK = 3;
-	Character_STATE_DEAD = 4;
+	OBJECT_STATE_NONE = 0;
+	OBJECT_STATE_IDLE = 1;
+	OBJECT_STATE_MOVE = 2;
+	OBJECT_STATE_JUMP = 3;
+	OBJECT_STATE_ATTACK = 4;
+	OBJECT_STATE_DEAD = 5;
 }
 
 /*----------------------------

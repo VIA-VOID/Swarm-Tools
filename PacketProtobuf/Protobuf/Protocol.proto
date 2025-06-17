@@ -20,6 +20,39 @@ message CS_PLAYER_ENTER_GAME
 }
 
 /*----------------------------
+	플레이어 스폰/디스폰
+----------------------------*/
+
+message SC_PLAYER_SPAWN
+{
+	uint64 characterId = 1;			// 캐릭터 ID
+}
+
+message SC_PLAYER_DESPAWN
+{
+	uint64 characterId = 1;			// 캐릭터 ID
+}
+
+/*----------------------------
+	플레이어 이동
+----------------------------*/
+
+message SC_PLAYER_MOVE
+{
+	uint64 characterId = 1;			// 캐릭터 ID
+	PosInfo posInfo = 2;			// 위치, 방향 정보
+	ObjectState state = 3;		// 캐릭터 상태
+}
+
+message CS_PLAYER_MOVE
+{
+	uint64 characterId = 1;			// 캐릭터 ID
+	PosInfo posInfo = 2;			// 위치, 방향 정보
+	ObjectState state = 3;		// 캐릭터 상태
+}
+
+
+/*----------------------------
 			채팅
 ----------------------------*/
 
