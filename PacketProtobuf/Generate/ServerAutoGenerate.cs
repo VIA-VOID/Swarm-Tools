@@ -88,7 +88,7 @@ class ServerAutoGenerate
                 foreach (var pair in domains)
                 {
                     string domain = pair.Key;
-                    output.Add($"\t_domainHandlerClasses.emplace_back(std::make_unique<{domain}PacketHandler>());");
+                    output.Add($"\t_domainHandlerClasses.emplace_back(ObjectPool<{domain}PacketHandler>::MakeUnique());");
                 }
             }
             else
