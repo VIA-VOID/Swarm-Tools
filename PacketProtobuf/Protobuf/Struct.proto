@@ -9,10 +9,10 @@ import "Enum.proto";
 
 message PosInfo
 {
-	float x = 1;
-	float y = 2;
-	float z = 3;
-	float yaw = 4;
+	int32 x = 1;
+	int32 y = 2;
+	int32 z = 3;
+	int32 yaw = 4;
 }
 
 /*----------------------------
