@@ -43,25 +43,7 @@ message ObjectInfo
 	PosInfo posInfo = 3;				// 위치 및 방향 정보
 	ObjectState state = 4;				// Object 상태
 	StatInfo statInfo = 5;				// 스탯 정보
-	string name = 6;					// 이름
-}
-
-/*----------------------------
-		플레이어 정보
-----------------------------*/
-
-message PlayerInfo
-{
-	ObjectInfo info = 1;				// Object 공용 정보
-	PlayerType playerType = 2;			// 직업
-}
-
-/*----------------------------
-		몬스터 정보
-----------------------------*/
-
-message MonsterInfo
-{
-	ObjectInfo info = 1;				// Object 공용 정보
-	MonsterType monsterType = 2;		// 몬스터 타입
+	PlayerType playerType = 6;			// 직업
+	MonsterType monsterType = 7;		// 몬스터 타입
+	string name = 8;					// 이름
 }

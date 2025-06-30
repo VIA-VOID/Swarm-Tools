@@ -10,7 +10,7 @@ import "Struct.proto";
 
 message SC_PLAYER_ENTER_GAME
 {
-	PlayerInfo playerInfo = 1;		// 플레이어 정보
+	ObjectInfo objectInfo = 1;		// 공용 정보
 }
 
 message CS_PLAYER_ENTER_GAME
@@ -25,12 +25,12 @@ message CS_PLAYER_ENTER_GAME
 
 message SC_PLAYER_SPAWN
 {
-	uint64 characterId = 1;			// 캐릭터 ID
+	ObjectInfo objectInfo = 1;		// 공용 정보
 }
 
 message SC_PLAYER_DESPAWN
 {
-	uint64 characterId = 1;			// 캐릭터 ID
+	uint64 ObjectId = 1;			// 고유 ID
 }
 
 /*----------------------------
@@ -39,16 +39,16 @@ message SC_PLAYER_DESPAWN
 
 message SC_PLAYER_MOVE
 {
-	uint64 characterId = 1;			// 캐릭터 ID
+	uint64 ObjectId = 1;			// 고유 ID
 	PosInfo posInfo = 2;			// 위치, 방향 정보
-	ObjectState state = 3;		// 캐릭터 상태
+	ObjectState state = 3;			// 캐릭터 상태
 }
 
 message CS_PLAYER_MOVE
 {
-	uint64 characterId = 1;			// 캐릭터 ID
+	uint64 ObjectId = 1;			// 고유 ID
 	PosInfo posInfo = 2;			// 위치, 방향 정보
-	ObjectState state = 3;		// 캐릭터 상태
+	ObjectState state = 3;			// 캐릭터 상태
 }
 
 
