@@ -41,9 +41,8 @@ message ObjectInfo
 	uint64 objectId = 1;				// 고유 ID
 	ObjectType type = 2;				// Object 타입
 	PosInfo posInfo = 3;				// 위치 및 방향 정보
-	ObjectState state = 4;				// Object 상태
-	StatInfo statInfo = 5;				// 스탯 정보
-	PlayerType playerType = 6;			// 직업
-	MonsterType monsterType = 7;		// 몬스터 타입
-	string name = 8;					// 이름
+	StatInfo statInfo = 4;				// 스탯 정보
+	PlayerType playerType = 5;			// 직업
+	MonsterType monsterType = 6;		// 몬스터 타입
+	string name = 7;					// 이름
 }

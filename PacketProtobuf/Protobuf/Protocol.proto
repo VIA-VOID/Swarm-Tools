@@ -41,14 +41,12 @@ message SC_PLAYER_MOVE
 {
 	uint64 ObjectId = 1;			// 고유 ID
 	PosInfo posInfo = 2;			// 위치, 방향 정보
-	ObjectState state = 3;			// 캐릭터 상태
 }
 
 message CS_PLAYER_MOVE
 {
 	uint64 ObjectId = 1;			// 고유 ID
 	PosInfo posInfo = 2;			// 위치, 방향 정보
-	ObjectState state = 3;			// 캐릭터 상태
 }
 
 
