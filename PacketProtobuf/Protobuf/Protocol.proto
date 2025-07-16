@@ -5,6 +5,20 @@ import "Enum.proto";
 import "Struct.proto";
 
 /*----------------------------
+		하트비트
+----------------------------*/
+
+message SC_SYSTEM_PING
+{
+	int64 CurrentTime = 1;
+}
+
+message CS_SYSTEM_PONG
+{
+	int64 CurrentTime = 1;
+}
+
+/*----------------------------
 	플레이어 입장 관련
 ----------------------------*/
 
@@ -30,7 +44,7 @@ message SC_PLAYER_SPAWN
 
 message SC_PLAYER_DESPAWN
 {
-	uint64 ObjectId = 1;			// 고유 ID
+	uint64 objectId = 1;			// 고유 ID
 }
 
 /*----------------------------
@@ -39,16 +53,15 @@ message SC_PLAYER_DESPAWN
 
 message SC_PLAYER_MOVE
 {
-	uint64 ObjectId = 1;			// 고유 ID
+	uint64 objectId = 1;			// 고유 ID
 	PosInfo posInfo = 2;			// 위치, 방향 정보
 }
 
 message CS_PLAYER_MOVE
 {
-	uint64 ObjectId = 1;			// 고유 ID
-	PosInfo posInfo = 2;			// 위치, 방향 정보
+	PosInfo posInfo = 1;			// 위치, 방향 정보
+	PosMoveVector moveVector = 2;	// 이동 벡터
 }
-
 
 /*----------------------------
 			채팅
