@@ -50,7 +50,7 @@ COPY /Y Struct.pb.h "%DUMMY_CLIENT_PATH%\Protocol"
 COPY /Y Struct.pb.cc "%DUMMY_CLIENT_PATH%\Protocol"
 COPY /Y Protocol.pb.h "%DUMMY_CLIENT_PATH%\Protocol"
 COPY /Y Protocol.pb.cc "%DUMMY_CLIENT_PATH%\Protocol"
-COPY /Y PacketHandler.cpp "%DUMMY_CLIENT_PATH%\Packet"
+COPY /Y DM_PacketHandler.cpp "%DUMMY_CLIENT_PATH%\Packet\PacketHandler.cpp"
 COPY /Y PacketId.h "%DUMMY_CLIENT_PATH%\Packet"
 
 echo [INFO] Copying generated files to UnrealEngine project...
