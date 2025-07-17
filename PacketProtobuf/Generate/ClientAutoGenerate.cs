@@ -14,13 +14,15 @@ class ClientAutoGenerate
         // (Domain)PacketHandler.h 생성
         GenerateUnrealDomainCode(clientDomains);
         // PacketHandler::Init() 함수 구현
-        GenerateUnrealPacketHandlerInit(clientDomains, outputDir);
+        Common.GeneratePacketHandlerInit(ServiceType.Unreal, clientDomains, outputDir);
     }
 
     public static void GenerateDummyClient(List<string> allPackets, Dictionary<string, List<string>> clientDomains, string outputDir)
     {
         // (Domain)PacketHandler.h 생성
         GenerateDomainPacketHandler(clientDomains);
+        // PacketHandler::Init() 함수 구현
+        Common.GeneratePacketHandlerInit(ServiceType.Dummy, clientDomains, outputDir);
     }
 
     // (Domain)PacketHandler.h 생성
@@ -121,43 +123,5 @@ class ClientAutoGenerate
 
             Common.FullPathWriteFile(output, clientPath, $"{domain}PacketHandler.h");
         }
-    }
-
-    // PacketHandler::Init() 자동화
-    private static void GenerateUnrealPacketHandlerInit(Dictionary<string, List<string>> domains, string outputDir)
-    {
-        string? packetHandlerPath = Common.GetTemplateFilePath(ServiceType.Unreal, "PacketHandler.cpp");
-        if (packetHandlerPath == null)
-        {
-            return;
-        }
-        string[] lines = File.ReadAllLines(packetHandlerPath);
-        List<string> output = new List<string>();
-
-        foreach (string line in lines)
-        {
-            if (line.Contains("// Generate include Domain"))
-            {
-                foreach (var pair in domains)
-                {
-                    string domain = pair.Key;
-                    output.Add($"#include \"{domain}PacketHandler.h\"");
-                }
-            }
-            else if (line.Contains("// Generate Init"))
-            {
-                foreach (var pair in domains)
-                {
-                    string domain = pair.Key;
-                    output.Add($"\tDomainHandlerClasses.Add(MakeUnique<F{domain}PacketHandler>());");
-                }
-            }
-            else
-            {
-                output.Add(line);
-            }
-        }
-
-        Common.WriteFile(output, outputDir, "UE_PacketHandler.cpp");
     }
 }

@@ -14,7 +14,7 @@ class ServerAutoGenerate
         // (Domain)PacketHandler.h 생성
         GenerateDomainPacketHandler(serverDomains);
         // PacketHandler::Init() 함수 구현
-        GeneratePacketHandlerInit(serverDomains, outputDir);
+        Common.GeneratePacketHandlerInit(ServiceType.Server, serverDomains, outputDir);
     }
 
     // PacketID 프로토콜 자동화
@@ -60,43 +60,5 @@ class ServerAutoGenerate
             return;
         }
         Common.GenerateDomainCode(domains, domainHandlerPath, serverPath);
-    }
-
-    // PacketHandler::Init() 자동화
-    private static void GeneratePacketHandlerInit(Dictionary<string, List<string>> domains, string outputDir)
-    {
-        string? packetHandlerPath = Common.GetTemplateFilePath(ServiceType.Server, "PacketHandler.cpp");
-        if (packetHandlerPath == null)
-        {
-            return;
-        }
-        string[] lines = File.ReadAllLines(packetHandlerPath);
-        List<string> output = new List<string>();
-
-        foreach (string line in lines)
-        {
-            if (line.Contains("// Generate include Domain"))
-            {
-                foreach (var pair in domains)
-                {
-                    string domain = pair.Key;
-                    output.Add($"#include \"{domain}PacketHandler.h\"");
-                }
-            }
-            else if (line.Contains("// Generate Init"))
-            {
-                foreach (var pair in domains)
-                {
-                    string domain = pair.Key;
-                    output.Add($"\t_domainHandlerClasses.emplace_back(ObjectPool<{domain}PacketHandler>::MakeUnique());");
-                }
-            }
-            else
-            {
-                output.Add(line);
-            }
-        }
-
-        Common.WriteFile(output, outputDir, "PacketHandler.cpp");
     }
 }

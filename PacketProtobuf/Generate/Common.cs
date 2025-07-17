@@ -98,4 +98,59 @@ class Common
         }
     }
 
+    // PacketHandler.cpp 자동생성
+    public static void GeneratePacketHandlerInit(ServiceType serviceType, Dictionary<string, List<string>> domains, string outputDir)
+    {
+        string? packetHandlerPath = Common.GetTemplateFilePath(serviceType, "PacketHandler.cpp");
+        if (packetHandlerPath == null)
+        {
+            return;
+        }
+        string[] lines = File.ReadAllLines(packetHandlerPath);
+        List<string> output = new List<string>();
+
+        foreach (string line in lines)
+        {
+            if (line.Contains("// Generate include Domain"))
+            {
+                foreach (var pair in domains)
+                {
+                    string domain = pair.Key;
+                    output.Add($"#include \"{domain}PacketHandler.h\"");
+                }
+            }
+            else if (line.Contains("// Generate Init"))
+            {
+                foreach (var pair in domains)
+                {
+                    string domain = pair.Key;
+                    if(serviceType == ServiceType.Unreal)
+                    {
+                        output.Add($"\tDomainHandlerClasses.Add(MakeUnique<F{domain}PacketHandler>());");
+                    }
+                    else
+                    {
+                        output.Add($"\t_domainHandlerClasses.emplace_back(ObjectPool<{domain}PacketHandler>::MakeUnique());");
+                    }
+                }
+            }
+            else
+            {
+                output.Add(line);
+            }
+        }
+
+        string fileName = "PacketHandler.cpp";
+        
+        if (serviceType == ServiceType.Unreal)
+        {
+            fileName = "UE_PacketHandler.cpp";
+        }
+        else if(serviceType == ServiceType.Dummy)
+        {
+            fileName = "DM_PacketHandler.cpp";
+        }
+
+        WriteFile(output, outputDir, fileName);
+    }
 }
