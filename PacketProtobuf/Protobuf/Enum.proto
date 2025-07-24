@@ -39,6 +39,8 @@ enum MonsterType
 enum MsgType
 {
 	MSG_TYPE_NONE = 0;
-	MSG_TYPE_ALL = 1;
-	MSG_TYPE_WORLD = 2;
+	MSG_TYPE_All = 1;
+	MSG_TYPE_General = 2;
+	MSG_TYPE_Local = 3;
+	MSG_TYPE_System = 4;
 }
