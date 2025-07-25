@@ -69,9 +69,8 @@ message CS_PLAYER_MOVE
 
 message SC_CHAT_MSG
 {
-	int64 timestamp = 1;
-	string msg = 2;
-	MsgType msgType = 3;
+	string msg = 1;
+	MsgType msgType = 2;
 }
 
 message CS_CHAT_MSG
